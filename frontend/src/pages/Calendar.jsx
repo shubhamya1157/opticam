@@ -243,7 +243,7 @@ export default function Calendar() {
     };
 
     return (
-        <div className="min-h-screen pb-20 space-y-8 animate-fade-in text-white/90">
+        <div className="min-h-screen pb-20 space-y-8 animate-fade-in text-[var(--text-primary)]">
 
             {/* 🟢 HEADER */}
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -252,20 +252,20 @@ export default function Calendar() {
                         <span className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest shadow-lg shadow-blue-500/20 flex items-center gap-1">
                             <CalendarIcon size={10} className="text-white" /> Planning Console
                         </span>
-                        {isCR && <span className="text-gray-500 text-xs font-mono border border-gray-800 px-1 rounded">COMMANDER MODE</span>}
+                        {isCR && <span className="text-[var(--text-secondary)] text-xs font-mono border border-[var(--border-color)] px-1 rounded">COMMANDER MODE</span>}
                     </div>
-                    <h1 className="text-4xl font-black tracking-tighter text-white mb-1">Academic Timeline</h1>
-                    <p className="text-gray-400 text-sm">Synchronize your objectives. Stay ahead.</p>
+                    <h1 className="text-4xl font-black tracking-tighter text-[var(--text-primary)] mb-1">Academic Timeline</h1>
+                    <p className="text-[var(--text-secondary)] text-sm">Synchronize your objectives. Stay ahead.</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2 md:justify-end items-center">
                     {/* Semester Toggle */}
-                    <div className="bg-[#16181c] p-1 rounded-xl border border-white/5 flex">
+                    <div className="bg-[var(--bg-secondary)] p-1 rounded-xl border border-[var(--border-color)] flex shadow-sm">
                         {["odd", "even"].map(s => (
                             <button
                                 key={s}
                                 onClick={() => setSemester(s)}
-                                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${semester === s ? 'bg-white text-black shadow-md' : 'text-gray-500 hover:text-white'}`}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${semester === s ? 'bg-[var(--accent-blue)] text-white shadow-md' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                             >
                                 {s} Sem
                             </button>
@@ -274,7 +274,7 @@ export default function Calendar() {
 
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                        className="flex items-center gap-2 bg-[var(--accent-blue)] hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95"
                     >
                         <Plus size={18} /> New Event
                     </button>
@@ -283,7 +283,7 @@ export default function Calendar() {
 
             {/* 🟢 FILTER BAR */}
             <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                <div className="flex items-center gap-2 text-gray-500 text-xs font-bold uppercase tracking-widest mr-2">
+                <div className="flex items-center gap-2 text-[var(--text-secondary)] text-xs font-bold uppercase tracking-widest mr-2">
                     <Filter size={14} /> Filters:
                 </div>
                 {Object.keys(typeConfig).map(type => {
@@ -295,7 +295,7 @@ export default function Calendar() {
                             onClick={() => toggleFilter(type)}
                             className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all flex items-center gap-2 ${isActive
                                 ? `${config.bg} ${config.color} ${config.border} shadow-md`
-                                : `border-transparent bg-[#16181c] text-gray-500 hover:bg-white/5`
+                                : `border-transparent bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]`
                                 }`}
                         >
                             {isActive && config.icon && React.cloneElement(config.icon, { size: 12 })}
@@ -315,17 +315,17 @@ export default function Calendar() {
                     {nextBigOne ? (
                         <CountdownHero event={nextBigOne} />
                     ) : (
-                        <div className="bg-[#0f1419] border border-gray-800 rounded-[32px] p-8 text-center h-64 flex flex-col items-center justify-center">
-                            <Star className="text-gray-700 mb-4" size={32} />
-                            <h3 className="text-lg font-bold text-gray-400">All Systems Normal</h3>
-                            <p className="text-gray-600 text-xs mt-1">No impending deadlines detected.</p>
+                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[32px] p-8 text-center h-64 flex flex-col items-center justify-center">
+                            <Star className="text-[var(--text-secondary)] mb-4" size={32} />
+                            <h3 className="text-lg font-bold text-[var(--text-secondary)]">All Systems Normal</h3>
+                            <p className="text-[var(--text-secondary)] text-xs mt-1">No impending deadlines detected.</p>
                         </div>
                     )}
 
                     {/* Timeline List */}
-                    <div className="bg-[#09090b] rounded-[32px] border border-white/5 h-[400px] flex flex-col relative overflow-hidden">
-                        <div className="p-6 pb-4 border-b border-white/5 bg-[#09090b] z-20 flex justify-between items-center shadow-sm">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><Clock size={14} className="text-blue-500" /> Incoming</h3>
+                    <div className="bg-[var(--bg-secondary)] rounded-[32px] border border-[var(--border-color)] h-[400px] flex flex-col relative overflow-hidden">
+                        <div className="p-6 pb-4 border-b border-[var(--border-color)] bg-[var(--bg-secondary)] z-20 flex justify-between items-center shadow-sm">
+                            <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2"><Clock size={14} className="text-[var(--accent-blue)]" /> Incoming</h3>
                         </div>
                         <div className="flex-1 overflow-y-auto p-6 pt-4 space-y-3 custom-scrollbar">
                             {upcomingEvents.slice(0, 10).map((item) => {
@@ -334,7 +334,7 @@ export default function Calendar() {
                                     <div
                                         key={item._id}
                                         onClick={() => setSelectedEvent(item)}
-                                        className="p-3 rounded-xl bg-[#16181c] border border-white/5 hover:border-blue-500/30 cursor-pointer transition-all hover:translate-x-1 group flex items-start gap-4"
+                                        className="p-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] hover:border-[var(--accent-blue)]/30 cursor-pointer transition-all hover:translate-x-1 group flex items-start gap-4"
                                     >
                                         {/* Icon Box */}
                                         <div className={`mt-1 w-8 h-8 rounded-lg flex items-center justify-center ${config.bg} ${config.color} border ${config.border}`}>
@@ -344,9 +344,9 @@ export default function Calendar() {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start mb-0.5">
                                                 <span className={`text-[9px] font-bold uppercase tracking-wider ${config.color}`}>{config.label}</span>
-                                                <span className="text-[10px] text-gray-500 font-mono">{new Date(item.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                                                <span className="text-[10px] text-[var(--text-secondary)] font-mono">{new Date(item.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                                             </div>
-                                            <h4 className="text-sm font-bold text-gray-200 group-hover:text-blue-400 transition-colors line-clamp-1">{item.title}</h4>
+                                            <h4 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-blue)] transition-colors line-clamp-1">{item.title}</h4>
                                         </div>
                                     </div>
                                 );
@@ -356,21 +356,21 @@ export default function Calendar() {
                 </div>
 
                 {/* 🟢 MAIN CALENDAR GRID */}
-                <div className="lg:col-span-8 bg-[#09090b] p-8 rounded-[32px] border border-white/5 relative shadow-2xl">
+                <div className="lg:col-span-8 bg-[var(--bg-secondary)] p-8 rounded-[32px] border border-[var(--border-color)] relative shadow-2xl">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-3xl font-black text-white flex items-center gap-2">
+                        <h2 className="text-3xl font-black text-[var(--text-primary)] flex items-center gap-2">
                             {currentDate.toLocaleString('default', { month: 'long' })}
-                            <span className="text-gray-600 text-xl font-medium">{currentDate.getFullYear()}</span>
+                            <span className="text-[var(--text-secondary)] text-xl font-medium">{currentDate.getFullYear()}</span>
                         </h2>
                         <div className="flex gap-2">
-                            <button onClick={goToToday} className="p-2 hover:bg-white/10 rounded-full transition-colors text-blue-400" title="Today"><RotateCcw size={18} /></button>
-                            <div className="w-px h-8 bg-gray-800 mx-2"></div>
-                            <button onClick={prevMonth} className="p-2 hover:bg-white/10 rounded-full transition-colors"><ChevronLeft size={20} /></button>
-                            <button onClick={nextMonth} className="p-2 hover:bg-white/10 rounded-full transition-colors"><ChevronRight size={20} /></button>
+                            <button onClick={goToToday} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--accent-blue)]" title="Today"><RotateCcw size={18} /></button>
+                            <div className="w-px h-8 bg-[var(--border-color)] mx-2"></div>
+                            <button onClick={prevMonth} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-primary)]"><ChevronLeft size={20} /></button>
+                            <button onClick={nextMonth} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-primary)]"><ChevronRight size={20} /></button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-7 mb-4 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                    <div className="grid grid-cols-7 mb-4 text-center text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">
                         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => <div key={d} className="py-2">{d}</div>)}
                     </div>
 
@@ -390,11 +390,11 @@ export default function Calendar() {
                                     onClick={() => hasEvent && setSelectedEvent(dayEvents[0])} // Opens first event for now, could be improved to show list
                                     className={`
                                         aspect-square rounded-2xl flex flex-col items-center justify-between p-2 relative group transition-all duration-300
-                                        ${isToday ? 'bg-blue-600/20 ring-1 ring-blue-500/50 shadow-[0_0_20px_rgba(37,99,235,0.2)]' : 'bg-[#16181c] hover:bg-[#1d2127] border border-transparent hover:border-white/10'}
+                                        ${isToday ? 'bg-[var(--accent-blue)]/10 ring-1 ring-[var(--accent-blue)]/50 shadow-inner' : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-primary)] border border-transparent hover:border-[var(--border-color)]'}
                                         ${hasEvent ? 'cursor-pointer hover:scale-[1.05]' : ''}
                                     `}
                                 >
-                                    <span className={`text-sm font-bold ${isToday ? 'text-blue-400' : 'text-gray-400 group-hover:text-white'}`}>{day}</span>
+                                    <span className={`text-sm font-bold ${isToday ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>{day}</span>
 
                                     {hasEvent && (
                                         <div className="w-full flex flex-col gap-1 items-center">
@@ -404,7 +404,7 @@ export default function Calendar() {
                                                     return (
                                                         <div
                                                             key={idx}
-                                                            className={`w-4 h-4 rounded-full ring-2 ring-[#16181c] flex items-center justify-center ${config.bg} text-[8px] border ${config.border}`}
+                                                            className={`w-4 h-4 rounded-full ring-2 ring-[var(--bg-tertiary)] flex items-center justify-center ${config.bg} text-[8px] border ${config.border}`}
                                                             title={ev.title}
                                                         >
                                                             {config.icon && React.cloneElement(config.icon, { size: 8, className: config.color })}
@@ -412,10 +412,10 @@ export default function Calendar() {
                                                     );
                                                 })}
                                                 {dayEvents.length > 3 && (
-                                                    <div className="w-4 h-4 rounded-full ring-2 ring-[#16181c] bg-gray-800 text-[8px] flex items-center justify-center font-bold text-gray-400">+{dayEvents.length - 3}</div>
+                                                    <div className="w-4 h-4 rounded-full ring-2 ring-[var(--bg-tertiary)] bg-[var(--bg-primary)] text-[8px] flex items-center justify-center font-bold text-[var(--text-secondary)]">+{dayEvents.length - 3}</div>
                                                 )}
                                             </div>
-                                            <span className="text-[9px] text-gray-500 font-medium truncate w-full text-center hidden md:block group-hover:text-white transition-colors">
+                                            <span className="text-[9px] text-[var(--text-secondary)] font-medium truncate w-full text-center hidden md:block group-hover:text-[var(--text-primary)] transition-colors">
                                                 {dayEvents[0].title}
                                             </span>
                                         </div>
@@ -431,19 +431,19 @@ export default function Calendar() {
             {/* 🟢 ADD DEADLINE MODAL */}
             {isAddModalOpen && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-                    <div className="bg-[#09090b] w-full max-w-md rounded-[32px] border border-white/10 shadow-2xl overflow-hidden animate-scale-in">
-                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                    <div className="bg-[var(--bg-secondary)] w-full max-w-md rounded-[32px] border border-[var(--border-color)] shadow-2xl overflow-hidden animate-scale-in">
+                        <div className="p-8 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-tertiary)]/30">
                             <div>
-                                <h2 className="text-xl font-black text-white uppercase tracking-wide">New Event</h2>
-                                <p className="text-gray-500 text-xs">Add to your academic timeline</p>
+                                <h2 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-wide">New Event</h2>
+                                <p className="text-[var(--text-secondary)] text-xs">Add to your academic timeline</p>
                             </div>
-                            <button onClick={() => setIsAddModalOpen(false)} className="bg-white/5 hover:bg-white/10 p-2 rounded-full transition-colors"><X size={18} className="text-white" /></button>
+                            <button onClick={() => setIsAddModalOpen(false)} className="bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] p-2 rounded-full transition-colors"><X size={18} className="text-[var(--text-primary)]" /></button>
                         </div>
                         <form onSubmit={handleAdd} className="p-8 space-y-5">
                             <div>
-                                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Title</label>
+                                <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-2">Title</label>
                                 <input
-                                    className="w-full bg-[#16181c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-sm font-medium transition-colors"
+                                    className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-blue)] text-sm font-medium transition-colors"
                                     placeholder="e.g. Physics Mid-Sem"
                                     value={newDeadline.title}
                                     onChange={e => setNewDeadline({ ...newDeadline, title: e.target.value })}
@@ -452,9 +452,9 @@ export default function Calendar() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Type</label>
+                                    <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-2">Type</label>
                                     <select
-                                        className="w-full bg-[#16181c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-sm appearance-none disabled:opacity-50"
+                                        className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-blue)] text-sm appearance-none disabled:opacity-50"
                                         value={isCR ? newDeadline.type : "personal"}
                                         onChange={e => setNewDeadline({ ...newDeadline, type: e.target.value })}
                                         disabled={!isCR}
@@ -467,25 +467,25 @@ export default function Calendar() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Date</label>
+                                    <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-2">Date</label>
                                     <input
                                         type="date"
-                                        className="w-full bg-[#16181c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-sm"
+                                        className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-blue)] text-sm"
                                         value={newDeadline.date}
                                         onChange={e => setNewDeadline({ ...newDeadline, date: e.target.value })}
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Description</label>
+                                <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-2">Description</label>
                                 <textarea
-                                    className="w-full bg-[#16181c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-sm resize-none h-24"
+                                    className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-blue)] text-sm resize-none h-24"
                                     placeholder="Additional details..."
                                     value={newDeadline.description}
                                     onChange={e => setNewDeadline({ ...newDeadline, description: e.target.value })}
                                 />
                             </div>
-                            <button type="submit" className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl mt-2 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-wider text-xs">
+                            <button type="submit" className="w-full py-4 bg-[var(--accent-blue)] hover:opacity-90 text-white font-bold rounded-xl mt-2 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-wider text-xs">
                                 Publish Event
                             </button>
                         </form>
@@ -497,7 +497,7 @@ export default function Calendar() {
             {selectedEvent && (
                 <div className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0" onClick={() => setSelectedEvent(null)}></div>
-                    <div className="bg-[#09090b] w-full max-w-lg rounded-[40px] border border-white/10 shadow-2xl relative overflow-hidden animate-scale-in">
+                    <div className="bg-[var(--bg-secondary)] w-full max-w-lg rounded-[40px] border border-[var(--border-color)] shadow-2xl relative overflow-hidden animate-scale-in">
                         {(() => {
                             const config = typeConfig[selectedEvent.type] || typeConfig.other;
                             return (
@@ -509,7 +509,7 @@ export default function Calendar() {
                                             {config.icon && React.cloneElement(config.icon, { size: 180 })}
                                         </div>
 
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] to-transparent"></div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-secondary)] to-transparent"></div>
 
                                         <button onClick={() => setSelectedEvent(null)} className="absolute top-6 right-6 bg-black/20 hover:bg-black/40 p-2 rounded-full text-white backdrop-blur-md transition-colors"><X size={20} /></button>
                                     </div>
@@ -523,34 +523,34 @@ export default function Calendar() {
                                             {config.label}
                                         </span>
 
-                                        <h2 className="text-3xl font-black text-white leading-tight mb-2">{selectedEvent.title}</h2>
-                                        <p className="text-gray-400 text-sm leading-relaxed mb-8 border-l-2 border-white/10 pl-4">
+                                        <h2 className="text-3xl font-black text-[var(--text-primary)] leading-tight mb-2">{selectedEvent.title}</h2>
+                                        <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-8 border-l-2 border-[var(--border-color)] pl-4">
                                             {selectedEvent.description || "No specific details provided for this event."}
                                         </p>
 
-                                        <div className="bg-[#16181c] rounded-2xl p-6 border border-white/5 space-y-4">
+                                        <div className="bg-[var(--bg-tertiary)] rounded-2xl p-6 border border-[var(--border-color)] space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3 text-gray-300">
+                                                <div className="flex items-center gap-3 text-[var(--text-primary)]">
                                                     <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500"><CalendarIcon size={18} /></div>
                                                     <span className="font-mono text-sm">{new Date(selectedEvent.deadline).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
                                                 </div>
-                                                <div className="text-xs text-gray-500 font-bold uppercase tracking-widest">Date</div>
+                                                <div className="text-xs text-[var(--text-secondary)] font-bold uppercase tracking-widest">Date</div>
                                             </div>
 
-                                            <div className="h-px bg-white/5"></div>
+                                            <div className="h-px bg-[var(--border-color)]"></div>
 
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3 text-gray-300">
+                                                <div className="flex items-center gap-3 text-[var(--text-primary)]">
                                                     <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500"><Clock size={18} /></div>
                                                     <span className="font-mono text-sm">All Day Event</span>
                                                 </div>
-                                                <div className="text-xs text-gray-500 font-bold uppercase tracking-widest">Time</div>
+                                                <div className="text-xs text-[var(--text-secondary)] font-bold uppercase tracking-widest">Time</div>
                                             </div>
                                         </div>
 
                                         {/* Actions */}
                                         <div className="mt-8 flex gap-3">
-                                            <button onClick={() => setSelectedEvent(null)} className="flex-1 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition-colors">
+                                            <button onClick={() => setSelectedEvent(null)} className="flex-1 py-3 bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold text-xs uppercase tracking-wider transition-colors">
                                                 Close
                                             </button>
                                             {(isCR || (selectedEvent.type === 'personal' && selectedEvent.createdBy === user._id)) && !selectedEvent.isStatic && (
@@ -594,14 +594,14 @@ function CountdownHero({ event }) {
     }, [event]);
 
     return (
-        <div className={`relative overflow-hidden rounded-[40px] p-8 min-h-[400px] flex flex-col justify-between group transition-all duration-500 border border-white/5 shadow-2xl`}>
+        <div className={`relative overflow-hidden rounded-[40px] p-8 min-h-[400px] flex flex-col justify-between group transition-all duration-500 border border-[var(--border-color)] shadow-2xl`}>
             {/* Dynamic Background */}
-            <div className={`absolute inset-0 bg-gradient-to-br from-[#09090b] via-[#09090b] to-black z-0`}></div>
+            <div className={`absolute inset-0 bg-gradient-to-br from-[var(--bg-secondary)] via-[var(--bg-secondary)] to-[var(--bg-primary)] z-0`}></div>
             <div className={`absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-br ${config.gradient} opacity-20 rounded-full blur-[100px] pointer-events-none group-hover:scale-110 transition-transform duration-1000`}></div>
 
             {/* Giant Background Icon */}
             <div className={`absolute -right-10 -bottom-10 opacity-5 rotate-12 transition-transform duration-700 group-hover:rotate-0 group-hover:scale-110`}>
-                {config.icon && React.cloneElement(config.icon, { size: 300, color: "white" })}
+                {config.icon && React.cloneElement(config.icon, { size: 300, className: "text-[var(--text-primary)]" })}
             </div>
 
 
@@ -612,10 +612,10 @@ function CountdownHero({ event }) {
                         Next Objective
                     </span>
                 </div>
-                <h2 className="text-5xl font-black text-white mb-4 tracking-tighter leading-[1.1]">
+                <h2 className="text-5xl font-black text-[var(--text-primary)] mb-4 tracking-tighter leading-[1.1]">
                     {event.title}
                 </h2>
-                <p className="text-gray-400 max-w-xs text-sm leading-relaxed border-l-2 border-white/10 pl-4">
+                <p className="text-[var(--text-secondary)] max-w-xs text-sm leading-relaxed border-l-2 border-[var(--border-color)] pl-4">
                     {event.description || "Prepare yourself. The deadline is approaching fast."}
                 </p>
             </div>
@@ -633,9 +633,9 @@ function CountdownHero({ event }) {
 
 function TimeBox({ val, label }) {
     return (
-        <div className="bg-[#16181c]/80 border border-white/10 backdrop-blur-md rounded-2xl flex-1 py-4 text-center">
-            <span className={`block text-3xl font-black text-white tracking-tighter tabular-nums`}>{val}</span>
-            <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold block opacity-60">{label}</span>
+        <div className="bg-[var(--bg-tertiary)]/80 border border-[var(--border-color)] backdrop-blur-md rounded-2xl flex-1 py-4 text-center">
+            <span className={`block text-3xl font-black text-[var(--text-primary)] tracking-tighter tabular-nums`}>{val}</span>
+            <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-widest font-bold block opacity-60">{label}</span>
         </div>
     )
 }

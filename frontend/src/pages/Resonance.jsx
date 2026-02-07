@@ -1,285 +1,828 @@
-import { useState, useEffect, useMemo } from "react";
-import { Search, Send, ArrowRight, Zap, Activity, Hash, Globe, Cpu, Clock, Radio, Users, MessageSquare } from "lucide-react";
-import { broadcastSignal, tuneSignals } from "../services/resonanceService";
-import ChatWidget from "../components/features/resonance/ChatWidget";
+import React, { useState, useEffect, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
+import {
+    Search, Plus, Sparkles, Users, BookOpen, Code, Star, Clock, Tag,
+    MessageSquare, Check, X, Loader2, Send, Trash2, Bell, Filter,
+    ArrowRight, Zap, MessageCircle, CheckCircle2, MoreHorizontal,
+    LayoutGrid, List, Layers, Phone, Video, Cpu, Activity, Globe,
+    Radio, Hexagon
+} from "lucide-react";
+import { getTasks, createTask, requestConnection, getMyTasks, getMyRequests, approveConnection, rejectConnection, deleteTask, getCachedTasks, getCachedMyTasks } from "../services/resonanceService";
+import { io } from "socket.io-client";
+import api from "../services/api";
 
-export default function Resonance() {
-    const { user } = useOutletContext(); // Get current user
-    const [params, setParams] = useState({ content: "", tags: "", contact: "" });
+// Ultra-Premium Components
+import WarRoom from "../components/resonance/WarRoom";
+import ActionCenter from "../components/resonance/ActionCenter";
+
+// Error Boundary
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error) {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error, errorInfo) {
+        console.error("Resonance Component Error:", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-8 text-center font-mono">
+                    <div className="max-w-md">
+                        <Activity size={48} className="text-red-500 mx-auto mb-6 animate-pulse" />
+                        <h1 className="text-2xl font-black mb-2 tracking-tighter text-red-500">CRITICAL SYSTEM FAILURE</h1>
+                        <p className="text-gray-500 mb-8 text-xs leading-relaxed uppercase tracking-wide border-t border-b border-white/5 py-4">
+                            Resonance Module connection interrupted. <br />
+                            Please check your neural link or credentials.
+                        </p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-8 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-xs font-bold uppercase tracking-widest transition-all hover:scale-105"
+                        >
+                            Reinitialize Sequence
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
+
+const SOCKET_URL = "http://localhost:5001";
+
+// 🎨 CREATIVE CATEGORY REINVENTION
+const CATEGORIES = [
+    {
+        value: "Cerebral Sync",
+        original: "Study Help",
+        icon: Cpu,
+        color: "from-cyan-400 to-blue-600",
+        accent: "text-cyan-400",
+        border: "border-cyan-500/30",
+        bg: "bg-cyan-500/10",
+        desc: "Knowledge Transfer Protocol"
+    },
+    {
+        value: "Fusion Core",
+        original: "Project Collaboration",
+        icon: Hexagon,
+        color: "from-violet-500 to-fuchsia-600",
+        accent: "text-violet-400",
+        border: "border-violet-500/30",
+        bg: "bg-violet-500/10",
+        desc: "Co-Creation Module"
+    },
+    {
+        value: "Skill Matrix",
+        original: "Skill Exchange",
+        icon: Zap,
+        color: "from-amber-400 to-orange-600",
+        accent: "text-amber-400",
+        border: "border-amber-500/30",
+        bg: "bg-amber-500/10",
+        desc: "Ability Upgrade System"
+    },
+    {
+        value: "Void Signals",
+        original: "Other",
+        icon: Radio,
+        color: "from-emerald-400 to-teal-600",
+        accent: "text-emerald-400",
+        border: "border-emerald-500/30",
+        bg: "bg-emerald-500/10",
+        desc: "Unclassified Frequencies"
+    }
+];
+
+export default function ResonanceWithBoundary() {
+    return (
+        <ErrorBoundary>
+            <Resonance />
+        </ErrorBoundary>
+    );
+}
+
+function Resonance() {
+    const { user } = useOutletContext();
+    const [tasks, setTasks] = useState([]);
+    const [myTasks, setMyTasks] = useState([]);
+    const [pendingRequests, setPendingRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const [signals, setSignals] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [broadcasting, setBroadcasting] = useState(false);
-
-    // Chat State
+    const [selectedCategory, setSelectedCategory] = useState("");
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showMyTasks, setShowMyTasks] = useState(false);
+    const [socket, setSocket] = useState(null);
     const [activeChatUser, setActiveChatUser] = useState(null);
+    const [toasts, setToasts] = useState([]);
 
-    const handleConnect = (signalUser, signalContact) => {
-        // If they have a user ID, open in-app chat
-        if (signalUser && signalUser._id && signalUser._id !== user._id) {
-            setActiveChatUser({
-                _id: signalUser._id, // Ensure we have the ID
-                username: signalUser.username
-            });
-        } else if (signalContact) {
-            // Fallback to external link if no ID (legacy support / external links)
-            const link = signalContact.includes('@') ? `mailto:${signalContact}` : signalContact.startsWith('http') ? signalContact : `https://${signalContact}`;
-            window.open(link, '_blank');
-        }
-    };
-
-    // 🟢 1. FETCH ALL SIGNALS
+    // Socket initialization
     useEffect(() => {
-        loadSignals();
-    }, []);
+        if (!user || user.name === "Guest") return; // Skip for guests
+        const newSocket = io(SOCKET_URL);
+        setSocket(newSocket);
+        const userId = user._id || user.id;
+        newSocket.emit("join_user_room", userId);
 
-    const loadSignals = async () => {
-        setLoading(true);
+        newSocket.on("connection_request", (data) => {
+            loadMyRequests();
+            showToast(`🔔 Signal received from ${data.requester.name}`, "info");
+        });
+
+        // Instant Connect: Owner approved ME
+        newSocket.on("connection_approved", (data) => {
+            showToast(`✅ Uplink established with ${data.ownerName}`, "success");
+            // Auto-open chat
+            setTimeout(() => {
+                setActiveChatUser({
+                    _id: data.ownerId,
+                    username: data.ownerName,
+                    name: data.ownerName
+                });
+            }, 800);
+        });
+
+        return () => newSocket.disconnect();
+    }, [user]);
+
+
+
+    // Data Loading with Cache Strategy
+    useEffect(() => {
+        const loadInitialData = async () => {
+            setLoading(true);
+            try {
+                // 1. Instant Load from Cache (Public)
+                const cachedTasks = await getCachedTasks();
+                if (cachedTasks && cachedTasks.length > 0) setTasks(cachedTasks);
+
+                // 2. Fetch Fresh Data (Public)
+                await loadTasks();
+
+                // 3. Authenticated Data (Private)
+                if (user && user.name !== "Guest") {
+                    const cachedMyTasks = await getCachedMyTasks();
+                    if (cachedMyTasks && cachedMyTasks.length > 0) setMyTasks(cachedMyTasks);
+
+                    await Promise.allSettled([loadMyTasks(), loadMyRequests()]);
+                }
+            } catch (err) {
+                console.error("Critical Resonance Load Error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadInitialData();
+    }, [user, selectedCategory, searchQuery]); // Re-run when crucial dependencies change
+
+    const loadTasks = async () => {
         try {
-            const res = await tuneSignals();
-            if (res.success) setSignals(res.data);
+            const res = await getTasks({ category: selectedCategory, search: searchQuery });
+            if (res.success) setTasks(res.data);
         } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
+            console.error("Failed to load public tasks:", err);
+            // Don't set loading false here, let the main effect handle it or specific UI states
         }
     };
 
-    // 🟢 2. CLIENT-SIDE MATCHING
-    const filteredSignals = useMemo(() => {
-        if (!searchQuery) return signals;
-        const lowerQuery = searchQuery.toLowerCase();
-        return signals.filter(signal => {
-            const contentMatch = signal.content.toLowerCase().includes(lowerQuery);
-            const tagMatch = signal.tags.some(tag => tag.toLowerCase().includes(lowerQuery));
-            return contentMatch || tagMatch;
-        });
-    }, [signals, searchQuery]);
-
-    // 🟢 3. BROADCAST SIGNAL
-    const handleBroadcast = async (e) => {
-        e.preventDefault();
-        if (!params.content) return;
-
-        setBroadcasting(true);
+    const loadMyTasks = async () => {
+        if (!user || user.name === "Guest") return;
         try {
-            const tagsArray = params.tags.split(',').map(t => t.trim()).filter(t => t);
-            const res = await broadcastSignal({ ...params, tags: tagsArray });
+            const res = await getMyTasks();
+            if (res.success) setMyTasks(res.data);
+        } catch (err) { console.error(err); }
+    };
+
+    const loadMyRequests = async () => {
+        if (!user || user.name === "Guest") return;
+        try {
+            const res = await getMyRequests();
+            if (res.success) setPendingRequests(res.data);
+        } catch (err) { console.error(err); }
+    };
+
+    const showToast = (message, type = "info") => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+    };
+
+    // Actions
+    const handleCreateTask = async (taskData) => {
+        if (!user || user.name === "Guest") {
+            showToast("Access Denied: Please Login First", "error");
+            return;
+        }
+        try {
+            const res = await createTask(taskData);
             if (res.success) {
-                setParams({ content: "", tags: "", contact: "" });
-                loadSignals();
+                setShowCreateModal(false);
+                loadTasks();
+                loadMyTasks();
+                showToast("✨ Signal Broadcasted Successfully", "success");
             }
         } catch (err) {
-            console.error(err);
-        } finally {
-            setBroadcasting(false);
+            const msg = err.response?.data?.message || err.message || "Transmission Failed";
+            showToast(msg, "error");
         }
     };
 
-    // 💾 PRESENCE
-    useEffect(() => {
-        const savedParams = localStorage.getItem("resonance_params");
-        const savedQuery = localStorage.getItem("resonance_query");
-        if (savedParams) setParams(JSON.parse(savedParams));
-        if (savedQuery) setSearchQuery(savedQuery);
-    }, []);
+    const handleConnect = async (taskId) => {
+        try {
+            await requestConnection(taskId, "Initializing collaboration protocol...");
+            showToast("🚀 Connection Packet Sent", "success");
+        } catch (err) { showToast(err.message, "error"); }
+    };
 
-    useEffect(() => {
-        localStorage.setItem("resonance_params", JSON.stringify(params));
-    }, [params]);
+    const handleApprove = async (taskId, requesterId, requesterName) => {
+        try {
+            if (String(requesterId) === String(user._id || user.id)) {
+                showToast("⚠️ Neural Interface Error: Cannot link with self", "error");
+                return;
+            }
+            await approveConnection(taskId, requesterId);
+            loadMyRequests();
+            loadMyTasks();
+            showToast(`✅ Neural Link: ${requesterName} Active`, "success");
 
-    useEffect(() => {
-        localStorage.setItem("resonance_query", searchQuery);
-    }, [searchQuery]);
+            // Instant Connect: I approved THEM
+            setActiveChatUser({ _id: requesterId, username: requesterName, name: requesterName });
+        } catch (err) { showToast(err.message, "error"); }
+    };
+
+    const handleReject = async (taskId, requesterId) => {
+        try {
+            await rejectConnection(taskId, requesterId);
+            loadMyRequests();
+            showToast("Connection Terminated", "info");
+        } catch (err) { showToast(err.message, "error"); }
+    };
+
+    const filteredTasks = tasks.filter(task =>
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
-        <div className="min-h-screen font-sans bg-black text-white pb-20">
-            {/* Background Texture (Subtle grid matching dashboard feel) */}
-            <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none"></div>
+        <div className="min-h-screen bg-[#050505] text-white relative overflow-hidden font-sans selection:bg-cyan-500/30">
+            {/* Deep Space Background with WebGL-style Canvas */}
+            <div className="fixed inset-0 bg-[#050505] -z-20" />
+            <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,_#1a1a2e_0%,_#000000_100%)] opacity-80 -z-10" />
+            <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none -z-10" />
 
-            <div className="max-w-7xl mx-auto p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
+            {/* Animated Orbs (Simulating WebGPU particles) */}
+            <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[150px] animate-pulse -z-10" />
+            <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[150px] animate-pulse delay-1000 -z-10" />
+            <div className="fixed top-[20%] right-[30%] w-[20%] h-[20%] bg-cyan-500/10 rounded-full blur-[100px] animate-blob -z-10" />
 
-                {/* LEFT PANEL: BROADCAST STATION */}
-                <div className="lg:col-span-4 space-y-6">
-
-                    {/* Header Card */}
-                    <div className="bg-black border border-[#2f3336] rounded-2xl p-6 shadow-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <Radio size={80} className="text-[#1d9bf0]" />
+            <div className="relative z-10 max-w-[1920px] mx-auto p-6 lg:p-12">
+                {/* Header */}
+                <header className="flex flex-col xl:flex-row justify-between items-end mb-16 gap-8 xl:gap-0">
+                    <div className="relative group">
+                        <div className="absolute -left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="flex items-center gap-3 mb-2">
+                            <Activity size={16} className="text-cyan-400 animate-pulse" />
+                            <span className="text-[10px] font-mono tracking-[0.3em] text-cyan-500/70 uppercase">
+                                Neural Network /// Active
+                            </span>
                         </div>
-                        <div>
-                            <h1 className="text-2xl font-black tracking-tight uppercase text-white mb-2 flex items-center gap-2">
-                                Resonance <div className="w-2 h-2 bg-[#1d9bf0] rounded-full animate-pulse"></div>
-                            </h1>
-                            <p className="text-[#71767b] text-xs font-bold uppercase tracking-widest">
-                                Global Signal Network
-                            </p>
-                        </div>
-                        <div className="mt-6 flex items-center gap-4 text-[10px] font-mono text-[#71767b] border-t border-[#2f3336] pt-4">
-                            <div className="flex items-center gap-1">
-                                <Activity size={12} />
-                                <span>ONLINE</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <Globe size={12} />
-                                <span>DECENTRALIZED</span>
-                            </div>
-                        </div>
+                        <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-white leading-none">
+                            RESONANCE
+                            <span className="text-transparent bg-clip-text bg-gradient-to-tr from-cyan-400 to-blue-600 animate-gradient-x">.</span>
+                        </h1>
+                        <p className="text-gray-400 mt-4 font-mono text-sm max-w-md border-l border-white/10 pl-4 py-1">
+                            High-Fidelity Collaboration Protocol. <br />
+                            <span className="text-cyan-500">Scan</span> for signals. <span className="text-blue-500">Establish</span> links.
+                        </p>
                     </div>
 
-                    {/* Broadcast Form */}
-                    <div className="bg-black border border-[#2f3336] rounded-2xl overflow-hidden shadow-lg">
-                        <div className="p-4 border-b border-[#2f3336] bg-[#16181c]/50">
-                            <h2 className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
-                                <Cpu size={14} className="text-[#1d9bf0]" /> New Transmission
-                            </h2>
+                    <div className="flex items-center gap-4">
+                        <ActionCenter
+                            user={user}
+                            socket={socket}
+                            requests={pendingRequests}
+                            onApprove={handleApprove}
+                            onReject={handleReject}
+                            onOpenChat={(id, name) => setActiveChatUser({ _id: id, username: name, name })}
+                        />
+                        <div className="h-8 w-px bg-white/10 mx-2" />
+                        <UserButton user={user} setShowMyTasks={setShowMyTasks} />
+                        <CreateButton onClick={() => setShowCreateModal(true)} />
+                    </div>
+                </header>
+
+                {/* Cyber-Filter Bar */}
+                <div className="sticky top-6 z-50 mb-12">
+                    <div className="bg-[#0a0a0a]/60 backdrop-blur-2xl border border-white/10 rounded-full p-2 flex flex-col md:flex-row items-center gap-2 shadow-[0_0_50px_rgba(0,0,0,0.5)] max-w-5xl mx-auto ring-1 ring-white/5">
+
+                        {/* Search Input */}
+                        <div className="relative flex-1 w-full md:w-auto group">
+                            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                <Search className="text-gray-500 group-focus-within:text-cyan-400 transition-colors" size={18} />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="INITIALIZE SCAN..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-transparent border-none py-3 pl-12 pr-6 text-sm text-white focus:ring-0 placeholder-gray-600 font-mono tracking-wide"
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-700 font-mono hidden md:block border border-white/10 px-1.5 py-0.5 rounded">CMD+K</div>
                         </div>
 
-                        <form onSubmit={handleBroadcast} className="p-6 space-y-5">
-                            <div>
-                                <textarea
-                                    className="w-full bg-[#16181c] border border-[#2f3336] rounded-xl p-4 text-sm text-white focus:border-[#1d9bf0] outline-none transition-all resize-none h-32 placeholder-[#71767b]"
-                                    placeholder="What's on your mind? Broadcast to the network..."
-                                    value={params.content}
-                                    onChange={e => setParams({ ...params, content: e.target.value })}
-                                    maxLength={280}
-                                />
-                                <div className="flex justify-end mt-1">
-                                    <span className={`text-[10px] font-bold ${params.content.length > 250 ? 'text-red-500' : 'text-[#71767b]'}`}>
-                                        {280 - params.content.length}
-                                    </span>
-                                </div>
-                            </div>
+                        <div className="h-8 w-px bg-white/10 hidden md:block" />
 
-                            <div className="space-y-4">
-                                <div>
-                                    <div className="flex items-center bg-[#16181c] border border-[#2f3336] rounded-lg px-3 py-2.5 focus-within:border-[#1d9bf0] transition-all">
-                                        <Hash size={14} className="text-[#71767b] mr-2" />
-                                        <input
-                                            className="bg-transparent outline-none text-xs text-white w-full placeholder-[#71767b] font-medium"
-                                            placeholder="Tags (e.g. design, dev)"
-                                            value={params.tags}
-                                            onChange={e => setParams({ ...params, tags: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center bg-[#16181c] border border-[#2f3336] rounded-lg px-3 py-2.5 focus-within:border-[#1d9bf0] transition-all">
-                                        <Users size={14} className="text-[#71767b] mr-2" />
-                                        <input
-                                            className="bg-transparent outline-none text-xs text-white w-full placeholder-[#71767b] font-medium"
-                                            placeholder="Contact / Link (Optional)"
-                                            value={params.contact}
-                                            onChange={e => setParams({ ...params, contact: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
+                        {/* Category Pills */}
+                        <div className="flex items-center gap-1 overflow-x-auto w-full md:w-auto px-2 pb-2 md:pb-0 scrollbar-hide">
                             <button
-                                type="submit"
-                                disabled={broadcasting || !params.content}
-                                className="w-full bg-white text-black hover:bg-[#eff3f4] font-bold py-3 rounded-full transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md text-sm uppercase tracking-wide"
+                                onClick={() => setSelectedCategory("")}
+                                className={`px-5 py-2.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all whitespace-nowrap ${!selectedCategory
+                                    ? 'bg-white text-black shadow-lg shadow-white/10 scale-105'
+                                    : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                             >
-                                {broadcasting ? <Activity size={16} className="animate-spin" /> : <Send size={16} />}
-                                {broadcasting ? "Transmitting..." : "Broadcast"}
+                                All Frequencies
                             </button>
-                        </form>
+                            {CATEGORIES.map(cat => (
+                                <button
+                                    key={cat.value}
+                                    onClick={() => setSelectedCategory(selectedCategory === cat.value ? "" : cat.value)}
+                                    className={`relative px-5 py-2.5 rounded-full text-[10px] font-bold tracking-widest uppercase whitespace-nowrap transition-all border ${selectedCategory === cat.value
+                                        ? `bg-white/10 text-white border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.1)]`
+                                        : 'bg-transparent border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                                        }`}
+                                >
+                                    <span className={`w-1.5 h-1.5 rounded-full inline-block mr-2 ${selectedCategory === cat.value ? 'bg-cyan-400 animate-pulse' : 'bg-gray-700'}`} />
+                                    {cat.value}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* RIGHT PANEL: SIGNAL FEED */}
-                <div className="lg:col-span-8 space-y-6">
-
-                    {/* Search Bar */}
-                    <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md pb-2 pt-2">
-                        <div className="relative group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#71767b] group-focus-within:text-[#1d9bf0] transition-colors" size={18} />
-                            <input
-                                className="w-full bg-[#16181c] border border-[#2f3336] rounded-full pl-12 pr-6 py-3 text-white placeholder-[#71767b] focus:border-[#1d9bf0] focus:bg-black outline-none transition-all text-sm font-medium"
-                                placeholder="Search frequencies..."
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
+                {/* Main Grid */}
+                {showMyTasks ? (
+                    <MyTasksDashboard
+                        tasks={myTasks}
+                        requests={pendingRequests}
+                        onClose={() => setShowMyTasks(false)}
+                        onApprove={handleApprove}
+                        onDelete={async (id) => {
+                            try {
+                                const res = await deleteTask(id);
+                                if (res.success) {
+                                    loadTasks();
+                                    loadMyTasks();
+                                    showToast("Signal Purged", "info");
+                                }
+                            } catch (e) { showToast(e.message, "error"); }
+                        }}
+                        onOpenChat={(id, name) => setActiveChatUser({ _id: id, username: name, name })}
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+                        {loading ? (
+                            [...Array(8)].map((_, i) => <HoloSkeleton key={i} />)
+                        ) : filteredTasks.map((task, idx) => (
+                            <HoloCard
+                                key={task._id}
+                                task={task}
+                                currentUserId={user?._id || user?.id}
+                                onConnect={handleConnect}
+                                onDelete={async (id) => {
+                                    if (window.confirm("Confirm deletion of this signal?")) {
+                                        try {
+                                            const res = await deleteTask(id);
+                                            if (res.success) {
+                                                loadTasks();
+                                                loadMyTasks();
+                                                showToast("Signal Purged", "info");
+                                            }
+                                        } catch (e) { showToast(e.message, "error"); }
+                                    }
+                                }}
+                                idx={idx}
                             />
-                            {loading && (
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                                    <Activity size={16} className="text-[#1d9bf0] animate-spin" />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Feed List */}
-                    <div className="space-y-4 min-h-[500px]">
-                        {filteredSignals.length === 0 && !loading && (
-                            <div className="border border-dashed border-[#2f3336] rounded-2xl p-12 flex flex-col items-center justify-center text-center">
-                                <Radio size={40} className="text-[#2f3336] mb-4" />
-                                <p className="text-[#71767b] font-bold text-sm uppercase tracking-wide">No Signals Found</p>
-                                <p className="text-[#71767b] text-xs mt-1">Broadcast something to start the network.</p>
-                            </div>
-                        )}
-
-                        {filteredSignals.map((signal) => (
-                            <div
-                                key={signal._id}
-                                className="bg-black hover:bg-[#080808] border border-[#2f3336] p-5 rounded-xl transition-all duration-200 group"
-                            >
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-[#16181c] border border-[#2f3336] flex items-center justify-center text-sm font-bold text-white">
-                                            {signal.username ? signal.username[0].toUpperCase() : "?"}
-                                        </div>
-                                        <div>
-                                            <div className="font-bold text-white text-sm flex items-center gap-1">
-                                                {signal.username || "Anonymous"}
-                                                {signal.username === "Shubham" && <Zap size={12} className="text-[#1d9bf0] fill-[#1d9bf0]" />}
-                                            </div>
-                                            <div className="text-xs text-[#71767b] flex items-center gap-1">
-                                                <Clock size={10} />
-                                                <span>{new Date(signal.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Connect Button (Smart) */}
-                                    <button
-                                        onClick={() => handleConnect({ _id: signal.userId, username: signal.username }, signal.contact)}
-                                        className="text-[#1d9bf0] bg-[#1d9bf0]/10 hover:bg-[#1d9bf0]/20 px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1"
-                                    >
-                                        <MessageSquare size={12} />
-                                        Connect
-                                    </button>
-                                </div>
-
-                                <p className="text-[#e7e9ea] text-[15px] leading-relaxed mb-3 whitespace-pre-wrap ml-13 pl-1">
-                                    {signal.content}
-                                </p>
-
-                                {signal.tags && signal.tags.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 mt-3 ml-13 pl-1">
-                                        {signal.tags.map((tag, i) => (
-                                            <span key={i} className="text-[11px] font-medium text-[#1d9bf0] hover:underline cursor-pointer">
-                                                #{tag}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
                         ))}
                     </div>
-                </div>
-
+                )}
             </div>
 
-            {/* In-App Chat Widget */}
+            {/* Overlays */}
+            <div className="fixed top-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none">
+                {toasts.map(t => <CyberToast key={t.id} {...t} />)}
+            </div>
+
+            {showCreateModal && <CreateModal onClose={() => setShowCreateModal(false)} onSubmit={handleCreateTask} />}
+
             {activeChatUser && (
-                <ChatWidget
-                    targetUser={activeChatUser}
+                <WarRoom
+                    user={activeChatUser}
                     currentUser={user}
+                    socket={socket}
                     onClose={() => setActiveChatUser(null)}
                 />
             )}
+        </div>
+    );
+}
+
+// --- CREATIVE "OSM" COMPONENTS ---
+
+function HoloCard({ task, currentUserId, onConnect, onDelete, idx }) {
+    const isOwner = String(task.ownerId) === String(currentUserId);
+    const category = CATEGORIES.find(c => c.value === task.category) || CATEGORIES[3];
+    const isPending = task.connectionRequests?.some(r => String(r.userId) === String(currentUserId) && r.status === 'pending');
+    const isConnected = task.activeConnections?.some(id => String(id) === String(currentUserId));
+
+    return (
+        <div
+            className="group relative h-[400px] bg-[#0c0c0c] rounded-[30px] border border-white/5 overflow-hidden transition-all duration-500 hover:border-white/10 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.7)] hover:-translate-y-1"
+        >
+            {/* Ambient Background Glow based on Category */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-[0.05] transition-opacity duration-500`} />
+
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay" />
+
+            <div className="p-8 h-full flex flex-col relative z-10">
+                {/* Header Metadata */}
+                <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-2">
+                        <div className={`p-2.5 rounded-xl bg-white/5 border border-white/5 ${category.accent} backdrop-blur-md`}>
+                            <category.icon size={18} />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className={`text-[9px] font-black uppercase tracking-widest ${category.accent}`}>
+                                {category.value}
+                            </span>
+                            <span className="text-[9px] text-gray-600 font-mono tracking-wider">
+                                NETWORK ID: {task._id.slice(-4).toUpperCase()}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="flex-1">
+                    <h3 className="text-2xl font-black text-white mb-4 leading-[1.1] group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 transition-all line-clamp-2">
+                        {task.title}
+                    </h3>
+                    <p className="text-sm text-gray-400 leading-relaxed line-clamp-3 font-medium">
+                        {task.description}
+                    </p>
+
+                    {/* Tags */}
+                    {task.tags && task.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-4">
+                            {task.tags.slice(0, 3).map((tag, i) => (
+                                <span key={i} className="text-[10px] font-mono text-gray-500 bg-white/5 px-2 py-1 rounded border border-white/5">
+                                    #{tag.replace('#', '')}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer / Connect Action */}
+                <div className="mt-6 pt-6 border-t border-white/5 flex items-center justify-between">
+                    {/* Owner Info */}
+                    <div className="flex items-center gap-3 group/owner cursor-default">
+                        <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-black p-[2px] ring-1 ring-white/10 group-hover/owner:ring-${category.color.split(' ')[1].replace('to-', '')} transition-all`}>
+                            <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
+                                <span className="text-xs font-bold text-gray-400 group-hover/owner:text-white transition-colors">
+                                    {task.ownerName?.[0]}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-white tracking-wide group-hover/owner:text-cyan-400 transition-colors">{task.ownerName}</span>
+                            <span className="text-[9px] text-gray-600 font-mono uppercase">Signal Source</span>
+                        </div>
+                    </div>
+
+                    {/* Action Button */}
+                    {!isOwner ? (
+                        <button
+                            onClick={() => {
+                                if (!isPending && !isConnected) onConnect(task._id);
+                            }}
+                            disabled={isPending || isConnected}
+                            className={`
+                                relative overflow-hidden h-10 pl-4 pr-10 rounded-full text-[10px] font-black uppercase tracking-widest transition-all
+                                ${isPending
+                                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 cursor-wait'
+                                    : isConnected
+                                        ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default'
+                                        : 'bg-white text-black hover:scale-105 shadow-lg shadow-white/20 hover:shadow-cyan-500/50'
+                                }
+                            `}
+                        >
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2">
+                                {isConnected ? 'LINKED' : isPending ? 'WAITING' : 'CONNECT'}
+                            </span>
+                            <span className={`absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center ${isConnected ? 'bg-emerald-500 text-black' : isPending ? 'bg-amber-500 text-black' : 'bg-black text-white'}`}>
+                                {isConnected ? <CheckCircle2 size={12} /> : isPending ? <Clock size={12} /> : <ArrowRight size={12} />}
+                            </span>
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => onDelete(task._id)}
+                            className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:rotate-12"
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function CreateModal({ onClose, onSubmit }) {
+    const [form, setForm] = useState({ title: "", description: "", category: CATEGORIES[0].value, tags: "" });
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4 animate-in fade-in duration-300">
+            <div className="w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_0_100px_rgba(0,0,0,0.8)] relative overflow-hidden group">
+
+                {/* Background Effects */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px]" />
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[100px]" />
+
+                <h2 className="text-4xl md:text-5xl font-black text-white mb-2 tracking-tighter relative z-10">INITIATE SIGNAL</h2>
+                <p className="text-gray-500 mb-10 font-mono text-xs uppercase tracking-widest relative z-10">Broadcast a new collaboration protocol</p>
+
+                <div className="space-y-8 relative z-10">
+                    <div className="group/input">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-cyan-500 mb-3 block flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
+                            Objective Title
+                        </label>
+                        <input
+                            value={form.title}
+                            onChange={e => setForm({ ...form, title: e.target.value })}
+                            className="w-full bg-[#111] border border-white/10 rounded-2xl p-5 text-white placeholder-gray-800 focus:border-cyan-500/50 focus:bg-[#151515] focus:ring-1 focus:ring-cyan-500/20 focus:outline-none transition-all font-bold text-xl tracking-wide"
+                            placeholder="Turn Quantum Theory into Reality..."
+                            autoFocus
+                        />
+                    </div>
+
+                    <div className="group/input">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-cyan-500 mb-3 block flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
+                            Mission Parameters
+                        </label>
+                        <textarea
+                            value={form.description}
+                            onChange={e => setForm({ ...form, description: e.target.value })}
+                            className="w-full bg-[#111] border border-white/10 rounded-2xl p-5 text-white placeholder-gray-800 focus:border-cyan-500/50 focus:bg-[#151515] focus:ring-1 focus:ring-cyan-500/20 focus:outline-none transition-all min-h-[150px] leading-relaxed resize-none text-sm"
+                            placeholder="Describe the objective, requirements, and expected outcomes..."
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="text-[10px] font-mono uppercase tracking-widest text-cyan-500 mb-3 block flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
+                                Frequency Channel
+                            </label>
+                            <div className="relative group/select">
+                                <select
+                                    value={form.category}
+                                    onChange={e => setForm({ ...form, category: e.target.value })}
+                                    className="w-full bg-[#111] border border-white/10 rounded-2xl p-5 text-white focus:outline-none appearance-none font-bold text-sm z-10 relative hover:bg-[#151515] focus:border-cyan-500/50 transition-colors cursor-pointer"
+                                >
+                                    {CATEGORIES.map(c => <option key={c.value} value={c.value} className="bg-[#111] text-gray-300 py-2">{c.value}</option>)}
+                                </select>
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none z-20 group-hover/select:text-cyan-400 transition-colors">
+                                    <List size={18} />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-mono uppercase tracking-widest text-cyan-500 mb-3 block flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
+                                Metadata Tags
+                            </label>
+                            <input
+                                value={form.tags}
+                                onChange={e => setForm({ ...form, tags: e.target.value })}
+                                className="w-full bg-[#111] border border-white/10 rounded-2xl p-5 text-white focus:border-cyan-500/50 focus:bg-[#151515] focus:ring-1 focus:ring-cyan-500/20 focus:outline-none transition-all placeholder-gray-800 text-sm font-medium"
+                                placeholder="#react, #quantum, #ai..."
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex gap-4 mt-12 pt-8 border-t border-white/5 relative z-10">
+                    <button onClick={onClose} className="px-8 py-4 rounded-xl text-gray-500 hover:text-white font-bold tracking-wide transition-colors uppercase text-xs">
+                        ABORT SEQUENCE
+                    </button>
+                    <button
+                        onClick={() => onSubmit({ ...form, tags: form.tags.split(',').filter(Boolean) })}
+                        className="flex-1 px-8 py-4 rounded-xl bg-white text-black font-black tracking-widest hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(255,255,255,0.2)] transition-all uppercase text-sm"
+                    >
+                        Broadcast Signal
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function MyTasksDashboard({ tasks, requests, onClose, onApprove, onOpenChat, onDelete }) {
+    return (
+        <div className="fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-3xl overflow-y-auto animate-in slide-in-from-bottom-10 duration-500">
+            <div className="max-w-[1920px] mx-auto p-6 md:p-12">
+                <div className="flex justify-between items-center mb-16 border-b border-white/5 pb-8">
+                    <div>
+                        <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-2">MISSION CONTROL</h2>
+                        <p className="text-gray-500 font-mono text-sm tracking-widest uppercase">MANAGE ACTIVE SIGNALS AND INCOMING TRANSMISSIONS</p>
+                    </div>
+                    <button onClick={onClose} className="w-16 h-16 rounded-full bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 transition-all hover:rotate-90 flex items-center justify-center">
+                        <X size={32} />
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                    {/* Requests Column */}
+                    <div className="lg:col-span-4 space-y-8">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-sm font-mono uppercase tracking-widest text-cyan-400 flex items-center gap-3">
+                                <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_10px_cyan]" />
+                                Incoming Feed ({requests.length})
+                            </h3>
+                        </div>
+
+                        {requests.length === 0 ? (
+                            <div className="h-64 rounded-[30px] border border-white/5 bg-white/[0.02] flex flex-col items-center justify-center text-center p-8 border-dashed group">
+                                <div className="p-4 rounded-full bg-white/5 text-gray-700 mb-4 group-hover:scale-110 transition-transform">
+                                    <Radio size={32} />
+                                </div>
+                                <p className="text-gray-600 font-mono text-xs uppercase tracking-wider">NO ACTIVE TRANSMISSIONS FOUND</p>
+                            </div>
+                        ) : requests.map((req, i) => (
+                            <div key={i} className="p-8 rounded-[30px] bg-[#0c0c0c] border border-white/10 hover:border-cyan-500/50 transition-all group relative overflow-hidden">
+                                <div className="absolute inset-0 bg-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-4 mb-6">
+                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-cyan-500/20">
+                                            {req.requester.name[0]}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-white text-xl">{req.requester.name}</p>
+                                            <p className="text-[10px] font-mono text-cyan-500 uppercase tracking-wider">Requesting Uplink</p>
+                                        </div>
+                                    </div>
+                                    <div className="bg-black/40 p-4 rounded-xl border border-white/5 mb-6">
+                                        <p className="text-xs text-gray-400 font-mono"><span className="text-cyan-600">TARGET //</span> "{req.taskTitle}"</p>
+                                    </div>
+                                    <button
+                                        onClick={() => onApprove(req.taskId, req.requester.id, req.requester.name)}
+                                        className="w-full py-4 rounded-xl bg-white text-black font-black uppercase tracking-widest hover:scale-[1.02] transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                                    >
+                                        ESTABLISH LINK
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Active Tasks Column */}
+                    <div className="lg:col-span-8 space-y-8">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-sm font-mono uppercase tracking-widest text-emerald-400 flex items-center gap-3">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_emerald]" />
+                                Active Operations ({tasks.length})
+                            </h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {tasks.map(task => (
+                                <div key={task._id} className="group p-8 rounded-[30px] bg-[#0c0c0c] border border-white/5 hover:border-emerald-500/30 transition-all relative overflow-hidden h-full flex flex-col">
+                                    <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                        <button onClick={() => onDelete(task._id)} className="w-10 h-10 rounded-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-all">
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex justify-between items-start mb-4">
+                                        <span className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-[10px] uppercase font-bold text-emerald-400 border border-emerald-500/20 tracking-wider">
+                                            {task.category}
+                                        </span>
+                                    </div>
+                                    <h4 className="text-2xl font-black text-white mb-3 leading-tight group-hover:text-emerald-400 transition-colors">{task.title}</h4>
+                                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mb-8">{task.description}</p>
+
+                                    {/* Connectivity */}
+                                    <div className="mt-auto pt-6 border-t border-white/5">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex -space-x-3 hover:space-x-1 transition-all">
+                                                {task.activeConnections?.map((conn, i) => (
+                                                    <div
+                                                        key={i}
+                                                        onClick={() => onOpenChat(conn.userId, conn.userName)}
+                                                        className="w-12 h-12 rounded-full bg-black border border-white/10 flex items-center justify-center text-sm font-bold text-white cursor-pointer hover:scale-110 hover:border-emerald-500 transition-all relative z-10 shadow-lg group/avatar"
+                                                        title={`Chat with ${conn.userName}`}
+                                                    >
+                                                        {conn.userName[0]}
+                                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-black" />
+                                                    </div>
+                                                ))}
+                                                {task.activeConnections?.length === 0 && <span className="text-xs font-mono text-gray-600 mt-3 uppercase tracking-wider">NO ACTIVE LINKS</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// --- HELPER COMPONENTS ---
+
+function UserButton({ user, setShowMyTasks }) {
+    return (
+        <button onClick={() => setShowMyTasks(true)} className="flex items-center gap-3 pl-2 pr-6 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 transition-all group overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-indigo-500/20">
+                {user?.name?.[0] || 'U'}
+            </div>
+            <div className="flex flex-col items-start">
+                <span className="text-xs font-bold text-white group-hover:text-cyan-400 transition-colors uppercase tracking-wider">{user?.name}</span>
+                <span className="text-[9px] text-gray-500 font-mono">OPERATOR // ONLINE</span>
+            </div>
+        </button>
+    );
+}
+
+function CreateButton({ onClick }) {
+    return (
+        <button onClick={onClick} className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 hover:rotate-90 transition-all shadow-[0_0_30px_rgba(255,255,255,0.3)] z-10 group relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Plus size={28} strokeWidth={3} />
+        </button>
+    );
+}
+
+function CyberToast({ message, type }) {
+    const isSuccess = type === "success";
+    return (
+        <div className="animate-in slide-in-from-right-full duration-500 px-6 py-4 rounded-xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 flex items-center gap-4 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] relative overflow-hidden group min-w-[300px]">
+            <div className={`absolute left-0 top-0 bottom-0 w-1 ${isSuccess ? 'bg-emerald-500 shadow-[0_0_15px_emerald]' : 'bg-red-500 shadow-[0_0_15px_red]'}`} />
+            <div className={`p-2.5 rounded-full bg-opacity-10 ${isSuccess ? 'bg-emerald-500 text-emerald-500' : 'bg-red-500 text-red-500'}`}>
+                {isSuccess ? <CheckCircle2 size={20} /> : <Zap size={20} />}
+            </div>
+            <div>
+                <p className={`text-[10px] font-mono uppercase tracking-widest mb-0.5 ${isSuccess ? 'text-emerald-500' : 'text-red-500'}`}>System Alert</p>
+                <p className="text-sm font-bold text-white">{message}</p>
+            </div>
+        </div>
+    );
+}
+
+function HoloSkeleton() {
+    return (
+        <div className="h-[400px] rounded-[30px] bg-white/[0.02] border border-white/5 animate-pulse relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent translate-x-[-100%] animate-[shimmer_2s_infinite]" />
+            <div className="p-8 space-y-6">
+                <div className="flex justify-between">
+                    <div className="w-24 h-8 bg-white/5 rounded-xl" />
+                    <div className="w-20 h-4 bg-white/5 rounded-md" />
+                </div>
+                <div className="space-y-3">
+                    <div className="w-full h-8 bg-white/5 rounded-lg" />
+                    <div className="w-2/3 h-8 bg-white/5 rounded-lg" />
+                </div>
+                <div className="space-y-2 mt-8">
+                    <div className="w-full h-4 bg-white/5 rounded-md" />
+                    <div className="w-full h-4 bg-white/5 rounded-md" />
+                    <div className="w-3/4 h-4 bg-white/5 rounded-md" />
+                </div>
+                <div className="absolute bottom-8 left-8 right-8 flex justify-between items-center">
+                    <div className="flex gap-3">
+                        <div className="w-10 h-10 rounded-full bg-white/5" />
+                        <div className="space-y-2">
+                            <div className="w-20 h-3 bg-white/5 rounded" />
+                            <div className="w-12 h-2 bg-white/5 rounded" />
+                        </div>
+                    </div>
+                    <div className="w-24 h-10 rounded-full bg-white/5" />
+                </div>
+            </div>
         </div>
     );
 }

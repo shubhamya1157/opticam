@@ -44,7 +44,11 @@ export default function RoutineWidget({ user }) {
             gradientParts.push(`${item.color} ${startDeg}deg ${endDeg}deg`);
         });
 
-        setDonutGradient(`conic-gradient(from 0deg, ${gradientParts.join(', ')}, #16181c 0deg)`);
+        // Use theme-aware color for the empty space (using CSS variable via a small trick or just a neutral color that works in both)
+        // Since gradients need explicit colors, we'll check valid hex. But we can use 'transparent' and let background show?
+        // Better: Use a computed style or just a safe dark-gray for now, as donut charts are tricky with CSS vars in JS strings
+        // Actually, we can use a hardcoded neutral that works for both or simply reuse the track color.
+        setDonutGradient(`conic-gradient(from 0deg, ${gradientParts.join(', ')}, transparent 0deg)`);
 
 
         // 2. Find Current Activity
@@ -69,34 +73,34 @@ export default function RoutineWidget({ user }) {
     return (
         <div
             onClick={() => navigate('/day-pulse')}
-            className="mx-4 mb-4 bg-[#09090b]/40 border border-white/5 rounded-2xl p-4 cursor-pointer hover:bg-white/5 transition-all group relative overflow-hidden"
+            className="mx-4 mb-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 cursor-pointer hover:bg-[var(--bg-tertiary)] transition-all group relative overflow-hidden shadow-sm"
         >
             <div className="flex items-start justify-between">
                 <div>
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Day Pulse</h4>
+                    <h4 className="text-[10px] font-bold text-[var(--test-secondary)] uppercase tracking-widest mb-1">Day Pulse</h4>
                     {currentActivity ? (
                         <div>
-                            <div className="text-xl font-bold text-white font-['Outfit'] leading-tight">{currentActivity.activity}</div>
-                            <div className="text-[10px] text-[#1d9bf0] font-medium mt-0.5 animate-pulse">Running Now</div>
+                            <div className="text-xl font-bold text-[var(--text-primary)] font-['Outfit'] leading-tight">{currentActivity.activity}</div>
+                            <div className="text-[10px] text-[var(--accent-blue)] font-medium mt-0.5 animate-pulse">Running Now</div>
                         </div>
                     ) : (
                         <div>
-                            <div className="text-xl font-bold text-white font-['Outfit'] leading-tight">Free Time</div>
-                            <div className="text-[10px] text-gray-500 font-medium mt-0.5">Unscheduled</div>
+                            <div className="text-xl font-bold text-[var(--text-primary)] font-['Outfit'] leading-tight">Free Time</div>
+                            <div className="text-[10px] text-[var(--text-secondary)] font-medium mt-0.5">Unscheduled</div>
                         </div>
                     )}
                 </div>
 
                 {/* Donut Chart Visual */}
-                <div className="relative w-12 h-12 rounded-full border-4 border-[#16181c]" style={{ background: donutGradient || '#16181c' }}>
-                    <div className="absolute inset-0 m-auto w-8 h-8 bg-[#09090b] rounded-full flex items-center justify-center">
-                        <Clock size={14} className="text-white/50" />
+                <div className="relative w-12 h-12 rounded-full border-4 border-[var(--bg-tertiary)]" style={{ background: donutGradient || 'var(--bg-tertiary)' }}>
+                    <div className="absolute inset-0 m-auto w-8 h-8 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center">
+                        <Clock size={14} className="text-[var(--text-secondary)]" />
                     </div>
                 </div>
             </div>
 
             {/* Timeline Bar */}
-            <div className="mt-4 h-1.5 w-full bg-[#16181c] rounded-full overflow-hidden flex">
+            <div className="mt-4 h-1.5 w-full bg-[var(--bg-tertiary)] rounded-full overflow-hidden flex">
                 {user.dailyRoutine?.map((item, i) => {
                     const [sH, sM] = item.startTime.split(':').map(Number);
                     const [eH, eM] = item.endTime.split(':').map(Number);

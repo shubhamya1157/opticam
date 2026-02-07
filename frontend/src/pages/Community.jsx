@@ -388,41 +388,41 @@ export default function Community() {
     };
 
     return (
-        <div className="flex w-full h-[calc(100vh-40px)] bg-[#000000] text-gray-100 font-['Outfit'] overflow-hidden">
+        <div className="flex w-full h-[calc(100vh-40px)] bg-[var(--bg-primary)] text-[var(--text-primary)] font-['Outfit'] overflow-hidden transition-colors duration-300">
 
             {/* --- LEFT SIDEBAR (CHATS) --- */}
-            <div className={`w-[400px] border-r border-[#2f3336] flex flex-col bg-[#000000] shrink-0 z-20 ${activeGroup ? 'hidden md:flex' : 'flex w-full'}`}>
+            <div className={`w-[400px] border-r border-[var(--border-color)] flex flex-col bg-[var(--bg-primary)] shrink-0 z-20 transition-colors ${activeGroup ? 'hidden md:flex' : 'flex w-full'}`}>
 
                 {/* Header */}
-                <div className="h-[70px] bg-[#09090b] px-4 flex items-center justify-between shrink-0 border-b border-[#2f3336]">
+                <div className="h-[70px] bg-[var(--bg-secondary)] px-4 flex items-center justify-between shrink-0 border-b border-[var(--border-color)] transition-colors">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1d9bf0] to-[#8b5cf6] p-[1.5px]">
-                            <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-sm font-bold">
+                            <div className="w-full h-full rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-sm font-bold transition-colors">
                                 {user.name?.[0] || "U"}
                             </div>
                         </div>
                         <h1 className="text-xl font-bold font-['Outfit'] tracking-tight">Chats</h1>
                     </div>
 
-                    <div className="flex items-center gap-2 text-gray-400">
+                    <div className="flex items-center gap-2 text-[var(--text-secondary)]">
                         {user.role === 'cr' && (
-                            <button onClick={() => setShowCreateModal(true)} className="p-2 hover:bg-[#2f3336] rounded-full transition" title="New Group">
+                            <button onClick={() => setShowCreateModal(true)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition" title="New Group">
                                 <Plus size={22} />
                             </button>
                         )}
-                        <button className="p-2 hover:bg-[#2f3336] rounded-full transition">
+                        <button className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition">
                             <MoreVertical size={22} />
                         </button>
                     </div>
                 </div>
 
                 {/* Search */}
-                <div className="p-3 border-b border-[#2f3336]">
-                    <div className="bg-[#202327] rounded-lg flex items-center px-4 py-2 gap-3 focus-within:ring-1 focus-within:ring-[#1d9bf0] transition-all">
-                        <Search size={18} className="text-gray-500" />
+                <div className="p-3 border-b border-[var(--border-color)] transition-colors">
+                    <div className="bg-[var(--bg-tertiary)] rounded-lg flex items-center px-4 py-2 gap-3 focus-within:ring-1 focus-within:ring-[#1d9bf0] transition-all">
+                        <Search size={18} className="text-[var(--text-secondary)]" />
                         <input
                             placeholder="Search or start new chat"
-                            className="bg-transparent outline-none text-[15px] w-full placeholder:text-gray-500"
+                            className="bg-transparent outline-none text-[15px] w-full placeholder:text-[var(--text-secondary)] text-[var(--text-primary)]"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -432,7 +432,7 @@ export default function Community() {
                 {/* Chat List */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     {filteredGroups.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-[300px] text-gray-500 opacity-60">
+                        <div className="flex flex-col items-center justify-center h-[300px] text-[var(--text-secondary)] opacity-60">
                             <MessageSquare size={40} className="mb-3" />
                             <p>No chats yet</p>
                         </div>
@@ -441,17 +441,17 @@ export default function Community() {
                             <div
                                 key={group._id}
                                 onClick={() => setActiveGroup(group)}
-                                className={`flex items-center gap-4 px-4 py-3 cursor-pointer transition-colors border-b border-[#2f3336] hover:bg-[#16181c] ${activeGroup?._id === group._id ? "bg-[#16181c]" : ""}`}
+                                className={`flex items-center gap-4 px-4 py-3 cursor-pointer transition-colors border-b border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] ${activeGroup?._id === group._id ? "bg-[var(--bg-tertiary)]" : ""}`}
                             >
-                                <div className="w-[50px] h-[50px] rounded-full bg-[#2f3336] flex items-center justify-center text-white font-bold text-xl shrink-0">
+                                <div className="w-[50px] h-[50px] rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-primary)] font-bold text-xl shrink-0 border border-[var(--border-color)]">
                                     {group.icon && group.icon !== '📢' ? group.icon : group.name[0]}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-baseline mb-1">
-                                        <h3 className="text-[16px] font-medium truncate text-gray-100">{group.name}</h3>
-                                        <span className="text-[11px] text-gray-500">{/* Time */}</span>
+                                        <h3 className="text-[16px] font-medium truncate text-[var(--text-primary)]">{group.name}</h3>
+                                        <span className="text-[11px] text-[var(--text-secondary)]">{/* Time */}</span>
                                     </div>
-                                    <p className="text-[14px] leading-tight text-gray-500 truncate">{group.description || "Tap to chat"}</p>
+                                    <p className="text-[14px] leading-tight text-[var(--text-secondary)] truncate">{group.description || "Tap to chat"}</p>
                                 </div>
                             </div>
                         ))
@@ -460,11 +460,11 @@ export default function Community() {
             </div>
 
             {/* --- RIGHT: CHAT AREA --- */}
-            <div className={`flex-1 bg-[#0b0b0b] relative flex flex-col min-w-0 ${!activeGroup ? 'hidden md:flex' : 'flex w-full absolute md:relative inset-0 z-50'}`}>
+            <div className={`flex-1 bg-[var(--bg-primary)] relative flex flex-col min-w-0 transition-colors ${!activeGroup ? 'hidden md:flex' : 'flex w-full absolute md:relative inset-0 z-50'}`}>
                 {/* Background Pattern */}
                 <div className="absolute inset-0 z-0 opacity-[0.06] pointer-events-none"
                     style={{
-                        backgroundImage: "url('https://camo.githubusercontent.com/854a93c27d64274c4f815da2b64a78272a51f9d50e2b347e3a9y9e7fsw73/68747470733a2f2f7765622e77686174736170702e636f6d2f696d672f62672d636861742d74696c652d6461726b5f613462653531326537313935623662373364313732363534613933333335322e706e67')",
+                        backgroundImage: "url('https://camo.githubusercontent.com/854a93c27d64274c4f815da2b64a78272a51f9d50e2b347e3a9y9e7fsw73/68747470733a2f2f7765622e77686174736170702e636f6d2f696d672f62672d636861742d74696c652d6461726b5f6134626535313265373139356236623733643137323635346139333335322e706e67')",
                         backgroundSize: '400px'
                     }}>
                 </div>
@@ -472,29 +472,29 @@ export default function Community() {
                 {!activeGroup ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center relative z-10 px-6">
                         <div className="w-[300px] h-[300px] bg-[#1d9bf0]/5 rounded-full blur-[100px] absolute pointer-events-none"></div>
-                        <div className="bg-[#16181c] p-6 rounded-full mb-6 ring-1 ring-white/10 shadow-2xl">
+                        <div className="bg-[var(--bg-secondary)] p-6 rounded-full mb-6 ring-1 ring-[var(--border-color)] shadow-2xl transition-colors">
                             <MessageSquare size={48} className="text-[#1d9bf0]" />
                         </div>
-                        <h2 className="text-3xl font-light text-white mb-4">OptiCam Web</h2>
-                        <p className="text-gray-400 max-w-md text-sm leading-6">Send and receive messages seamlessly. <br />Keep your phone connected for the best experience.</p>
-                        <div className="mt-8 flex items-center gap-2 text-xs text-gray-500 font-medium">
+                        <h2 className="text-3xl font-light text-[var(--text-primary)] mb-4 transition-colors">OptiCam Web</h2>
+                        <p className="text-[var(--text-secondary)] max-w-md text-sm leading-6 transition-colors">Send and receive messages seamlessly. <br />Keep your phone connected for the best experience.</p>
+                        <div className="mt-8 flex items-center gap-2 text-xs text-[var(--text-secondary)] font-medium transition-colors">
                             <LockIcon size={12} /> End-to-end encrypted
                         </div>
                     </div>
                 ) : (
                     <>
                         {/* Chat Header */}
-                        <div className="h-[70px] bg-[#09090b] px-4 flex items-center justify-between shrink-0 border-b border-[#2f3336] relative z-20">
+                        <div className="h-[70px] bg-[var(--bg-secondary)] px-4 flex items-center justify-between shrink-0 border-b border-[var(--border-color)] relative z-20 transition-colors">
                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setShowGroupInfo(true)}>
-                                <button className="md:hidden text-gray-400 mr-2" onClick={(e) => { e.stopPropagation(); setActiveGroup(null) }}>
+                                <button className="md:hidden text-[var(--text-secondary)] mr-2" onClick={(e) => { e.stopPropagation(); setActiveGroup(null) }}>
                                     <ArrowLeft size={24} />
                                 </button>
-                                <div className="w-10 h-10 rounded-full bg-[#2f3336] flex items-center justify-center text-white font-bold text-lg">
+                                <div className="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-primary)] font-bold text-lg border border-[var(--border-color)] transition-colors">
                                     {activeGroup.icon && activeGroup.icon !== '📢' ? activeGroup.icon : activeGroup.name[0]}
                                 </div>
                                 <div>
-                                    <h3 className="text-white font-bold text-[16px]">{activeGroup.name}</h3>
-                                    <p className="text-[12px] text-gray-400 truncate max-w-[200px] md:max-w-md">
+                                    <h3 className="text-[var(--text-primary)] font-bold text-[16px] transition-colors">{activeGroup.name}</h3>
+                                    <p className="text-[12px] text-[var(--text-secondary)] truncate max-w-[200px] md:max-w-md transition-colors">
                                         {activeGroup.members?.map(m => m.name).join(', ') || 'tap for info'}
                                     </p>
                                 </div>
@@ -503,30 +503,30 @@ export default function Community() {
                             <div className="flex items-center gap-4">
 
                                 {showChatSearch ? (
-                                    <div className="bg-[#202327] rounded-lg flex items-center px-3 py-1.5 animate-slide-in-right">
-                                        <Search size={16} className="text-gray-500 mr-2" />
+                                    <div className="bg-[var(--bg-tertiary)] rounded-lg flex items-center px-3 py-1.5 animate-slide-in-right transition-colors">
+                                        <Search size={16} className="text-[var(--text-secondary)] mr-2" />
                                         <input
                                             autoFocus
-                                            className="bg-transparent text-sm w-32 outline-none text-white"
+                                            className="bg-transparent text-sm w-32 outline-none text-[var(--text-primary)]"
                                             placeholder="Search..."
                                             value={chatSearchQuery}
                                             onChange={e => setChatSearchQuery(e.target.value)}
                                             onBlur={() => !chatSearchQuery && setShowChatSearch(false)}
                                         />
-                                        <button onClick={() => { setShowChatSearch(false); setChatSearchQuery('') }}><X size={14} className="text-gray-500" /></button>
+                                        <button onClick={() => { setShowChatSearch(false); setChatSearchQuery('') }}><X size={14} className="text-[var(--text-secondary)]" /></button>
                                     </div>
                                 ) : (
-                                    <button className="text-gray-400 hover:text-white" onClick={() => setShowChatSearch(true)}><Search size={22} /></button>
+                                    <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]" onClick={() => setShowChatSearch(true)}><Search size={22} /></button>
                                 )}
 
-                                <button className="text-gray-400 hover:text-white" onClick={() => setTopMenuOpen(!topMenuOpen)}>
+                                <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]" onClick={() => setTopMenuOpen(!topMenuOpen)}>
                                     <MoreVertical size={22} />
                                 </button>
                                 {topMenuOpen && (
-                                    <div className="absolute top-16 right-4 bg-[#16181c] border border-[#2f3336] rounded-xl shadow-2xl py-2 w-52 z-50 overflow-hidden">
-                                        <button onClick={() => { setShowGroupInfo(true); setTopMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[#2f3336] text-sm">Group Info</button>
-                                        <button onClick={() => { setTopMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[#2f3336] text-sm">Select Messages</button>
-                                        <button onClick={() => { setTopMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[#2f3336] text-sm">Mute Notifications</button>
+                                    <div className="absolute top-16 right-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-2xl py-2 w-52 z-50 overflow-hidden transition-colors">
+                                        <button onClick={() => { setShowGroupInfo(true); setTopMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[var(--bg-tertiary)] text-sm text-[var(--text-primary)]">Group Info</button>
+                                        <button onClick={() => { setTopMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[var(--bg-tertiary)] text-sm text-[var(--text-primary)]">Select Messages</button>
+                                        <button onClick={() => { setTopMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[var(--bg-tertiary)] text-sm text-[var(--text-primary)]">Mute Notifications</button>
                                         <button onClick={async () => {
                                             if (window.confirm("Clear all messages in this chat?")) {
                                                 try {
@@ -534,10 +534,10 @@ export default function Community() {
                                                     setTopMenuOpen(false);
                                                 } catch (err) { console.error(err); }
                                             }
-                                        }} className="w-full text-left px-4 py-3 hover:bg-[#2f3336] text-sm text-yellow-500">Clear Chat</button>
+                                        }} className="w-full text-left px-4 py-3 hover:bg-[var(--bg-tertiary)] text-sm text-yellow-500">Clear Chat</button>
 
                                         {user.role === 'cr' && (
-                                            <button onClick={() => { handleDeleteGroup(activeGroup._id); setTopMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[#2f3336] text-sm text-red-500">Delete Group</button>
+                                            <button onClick={() => { handleDeleteGroup(activeGroup._id); setTopMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[var(--bg-tertiary)] text-sm text-red-500">Delete Group</button>
                                         )}
                                     </div>
                                 )}
@@ -547,12 +547,12 @@ export default function Community() {
                         {/* Messages */}
                         <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-2 z-10 scroll-smooth custom-scrollbar">
                             {groupMessages(messages).length === 0 && chatSearchQuery ? (
-                                <div className="text-center text-gray-500 mt-10">No messages found matching "{chatSearchQuery}"</div>
+                                <div className="text-center text-[var(--text-secondary)] mt-10">No messages found matching "{chatSearchQuery}"</div>
                             ) : groupMessages(messages).map((item, idx) => {
                                 if (item.type === 'date') {
                                     return (
                                         <div key={idx} className="flex justify-center my-4 sticky top-2 z-20">
-                                            <span className="bg-[#182229] border border-[#2f3336]/60 text-gray-300 text-[11px] px-3 py-1 rounded-full shadow-lg font-medium backdrop-blur-md">
+                                            <span className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-secondary)] text-[11px] px-3 py-1 rounded-full shadow-sm font-medium backdrop-blur-md">
                                                 {renderDateLabel(item.content)}
                                             </span>
                                         </div>
@@ -578,19 +578,19 @@ export default function Community() {
                                                 max-w-[80%] md:max-w-[60%] rounded-2xl px-4 py-2.5 relative shadow-sm text-[15px] leading-6 cursor-pointer font-['Outfit'] transition-all duration-200 hover:scale-[1.01]
                                                 ${isMe
                                                     ? 'bg-gradient-to-r from-[#3b82f6] via-[#2563eb] to-[#0ea5e9] text-white rounded-tr-none shadow-md border border-blue-400/20'
-                                                    : 'bg-[#1e293b] text-[#38bdf8] rounded-tl-none'}
+                                                    : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-tl-none border border-[var(--border-color)]'}
                                             `}
                                         >
                                             {!isMe && !isGrouped && (
-                                                <div className="text-[12px] font-bold mb-1 cursor-pointer hover:underline bg-gradient-to-r from-cyan-400 to-blue-500 text-transparent bg-clip-text drop-shadow-sm">
+                                                <div className="text-[12px] font-bold mb-1 cursor-pointer hover:underline text-[var(--accent-blue)] drop-shadow-sm">
                                                     {msg.senderName}
                                                 </div>
                                             )}
 
                                             {/* Quoted Message */}
                                             {msg.replyTo && (
-                                                <div className={`mb-2 p-2 rounded text-xs border-l-4 ${isMe ? 'bg-black/20 border-white/50' : 'bg-black/20 border-[#3b82f6]'}`}>
-                                                    <p className={`font-bold ${isMe ? 'text-white/80' : 'text-[#3b82f6]'}`}>
+                                                <div className={`mb-2 p-2 rounded text-xs border-l-4 ${isMe ? 'bg-black/20 border-white/50' : 'bg-[var(--bg-tertiary)] border-[var(--accent-blue)]'}`}>
+                                                    <p className={`font-bold ${isMe ? 'text-white/80' : 'text-[var(--accent-blue)]'}`}>
                                                         {messages.find(m => m._id === msg.replyTo)?.senderName || "Unknown"}
                                                     </p>
                                                     <p className="truncate opacity-80">
@@ -606,7 +606,7 @@ export default function Community() {
                                                 </div>
                                             )}
                                             {msg.type === 'file' && msg.fileUrl && (
-                                                <div className="mb-2 bg-[#2f3336]/50 p-3 rounded-xl flex items-center gap-4 mt-1 border border-white/5 hover:bg-[#2f3336] transition-all group/file relative overflow-hidden">
+                                                <div className={`mb-2 p-3 rounded-xl flex items-center gap-4 mt-1 border transition-all group/file relative overflow-hidden ${isMe ? "bg-white/10 border-white/10" : "bg-[var(--bg-tertiary)] border-[var(--border-color)]"}`}>
                                                     {/* Premium Icon Container */}
                                                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${msg.content?.toLowerCase().endsWith('.pdf')
                                                         ? 'bg-red-500/20 text-red-500 ring-1 ring-red-500/30'
@@ -620,7 +620,7 @@ export default function Community() {
                                                     </div>
 
                                                     <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                        <a href={msg.fileUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-gray-200 hover:text-white truncate block leading-tight mb-0.5 z-10 relative">
+                                                        <a href={msg.fileUrl} target="_blank" rel="noreferrer" className={`text-sm font-bold truncate block leading-tight mb-0.5 z-10 relative ${isMe ? 'text-white' : 'text-[var(--text-primary)]'}`}>
                                                             {msg.content || 'Attached File'}
                                                         </a>
                                                         <div className="flex items-center gap-2">
@@ -628,8 +628,8 @@ export default function Community() {
                                                                 }`}>
                                                                 {msg.content?.split('.').pop()?.toUpperCase() || 'FILE'}
                                                             </span>
-                                                            <span className="text-[10px] text-gray-500">•</span>
-                                                            <span className="text-[10px] text-gray-500 font-medium hover:text-gray-300 cursor-pointer">Download</span>
+                                                            <span className={`text-[10px] ${isMe ? 'text-white/60' : 'text-gray-400'}`}>•</span>
+                                                            <span className={`text-[10px] font-medium cursor-pointer ${isMe ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}>Download</span>
                                                         </div>
                                                     </div>
 
@@ -657,9 +657,9 @@ export default function Community() {
 
                                             <div className="flex flex-wrap gap-x-2 items-end">
                                                 {msg.type === 'text' && <span className="whitespace-pre-wrap">{msg.content}</span>}
-                                                <span className={`text-[10px] min-w-[50px] text-right ml-auto flex justify-end gap-1 select-none ${isMe ? "text-[#8696a0]" : "text-[#8696a0]"} -mb-0.5`}>
+                                                <span className={`text-[10px] min-w-[50px] text-right ml-auto flex justify-end gap-1 select-none ${isMe ? "text-white/70" : "text-[var(--text-secondary)]"} -mb-0.5`}>
                                                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    {isMe && <CheckCheck size={14} className="text-[#53bdeb]" />}
+                                                    {isMe && <CheckCheck size={14} className="text-white/70" />}
                                                 </span>
                                             </div>
                                         </div>
@@ -671,20 +671,20 @@ export default function Community() {
                         </div>
 
                         {/* Input Area */}
-                        <div className="bg-[#09090b] px-4 py-3 z-20 shrink-0 border-t border-[#2f3336]">
+                        <div className="bg-[var(--bg-secondary)] px-4 py-3 z-20 shrink-0 border-t border-[var(--border-color)] transition-colors">
                             {/* Reply Preview */}
                             {replyingTo && (
-                                <div className="flex items-center justify-between bg-[#16181c] p-2 rounded-lg mb-2 border-l-4 border-[#3b82f6]">
+                                <div className="flex items-center justify-between bg-[var(--bg-tertiary)] p-2 rounded-lg mb-2 border-l-4 border-[#3b82f6] transition-colors">
                                     <div className="text-sm">
                                         <p className="text-[#3b82f6] font-bold text-xs">Replying to {replyingTo.senderName}</p>
-                                        <p className="text-gray-400 truncate max-w-xs">{replyingTo.content}</p>
+                                        <p className="text-[var(--text-secondary)] truncate max-w-xs">{replyingTo.content}</p>
                                     </div>
-                                    <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-[#2f3336] rounded-full"><X size={16} /></button>
+                                    <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-[var(--bg-tertiary)] rounded-full"><X size={16} /></button>
                                 </div>
                             )}
 
                             {isUploading && (
-                                <div className="absolute top-[-4px] left-0 w-full h-1 bg-[#2f3336]">
+                                <div className="absolute top-[-4px] left-0 w-full h-1 bg-[var(--border-color)]">
                                     <div className="h-full bg-[#1d9bf0] transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
                                 </div>
                             )}
@@ -696,26 +696,26 @@ export default function Community() {
                                         Recording {formatTime(recordingTime)}
                                     </div>
                                     <div className="flex-1"></div>
-                                    <button onClick={cancelRecording} className="text-gray-400 hover:text-red-500 font-medium">Cancel</button>
+                                    <button onClick={cancelRecording} className="text-[var(--text-secondary)] hover:text-red-500 font-medium">Cancel</button>
                                     <button onClick={stopRecording} className="p-3 bg-[#1d9bf0] text-white rounded-full hover:bg-[#1a8cd8] transition">
                                         <Send size={24} />
                                     </button>
                                 </div>
                             ) : (
                                 <div className="flex items-end gap-3 max-w-4xl mx-auto">
-                                    <button className="p-2 text-gray-400 hover:text-white transition rounded-full hover:bg-[#2f3336]" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+                                    <button className="p-2 text-[var(--test-secondary)] hover:text-[var(--text-primary)] transition rounded-full hover:bg-[var(--bg-tertiary)]" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
                                         <Smile size={26} />
                                     </button>
-                                    <button className="p-2 text-gray-400 hover:text-white transition rounded-full hover:bg-[#2f3336]" onClick={handleFileUpload}>
+                                    <button className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition rounded-full hover:bg-[var(--bg-tertiary)]" onClick={handleFileUpload}>
                                         <Paperclip size={24} />
                                     </button>
                                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" onChange={onFileChange} />
 
-                                    <div className="flex-1 bg-[#202c33] rounded-2xl flex items-center px-4 py-2 my-1 border border-transparent focus-within:border-[#2f3336] transition-colors">
+                                    <div className="flex-1 bg-[var(--bg-tertiary)] rounded-2xl flex items-center px-4 py-2 my-1 border border-transparent focus-within:border-[var(--border-color)] transition-colors">
                                         <input
                                             type="text"
                                             placeholder={isUploading ? "Uploading file..." : "Type a message"}
-                                            className="bg-transparent outline-none text-white w-full placeholder:text-gray-400 text-[15px] font-normal"
+                                            className="bg-transparent outline-none text-[var(--text-primary)] w-full placeholder:text-[var(--text-secondary)] text-[15px] font-normal"
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage(e)}
@@ -733,7 +733,7 @@ export default function Community() {
                                     ) : (
                                         <button
                                             onClick={startRecording}
-                                            className="p-3 text-gray-400 hover:text-white hover:bg-[#2f3336] rounded-full transition"
+                                            className="p-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-full transition"
                                         >
                                             <Mic size={24} />
                                         </button>
@@ -743,12 +743,12 @@ export default function Community() {
 
                             {/* Emoji Picker */}
                             {showEmojiPicker && (
-                                <div className="absolute bottom-[80px] left-6 bg-[#16181c] border border-[#2f3336] rounded-xl p-4 shadow-2xl grid grid-cols-5 gap-2 w-[300px] z-50">
+                                <div className="absolute bottom-[80px] left-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 shadow-2xl grid grid-cols-5 gap-2 w-[300px] z-50">
                                     {emojis.map(emoji => (
                                         <button
                                             key={emoji}
                                             onClick={() => { setNewMessage(prev => prev + emoji); }}
-                                            className="text-2xl p-2 hover:bg-[#2f3336] rounded-lg transition"
+                                            className="text-2xl p-2 hover:bg-[var(--bg-tertiary)] rounded-lg transition"
                                         >
                                             {emoji}
                                         </button>
@@ -762,144 +762,85 @@ export default function Community() {
 
             {/* --- RIGHT INFO SIDEBAR --- */}
             {activeGroup && showGroupInfo && (
-                <div className="w-[320px] bg-[#000000] border-l border-[#2f3336] shrink-0 flex flex-col z-30 animate-slide-in-right h-full absolute right-0 top-0 bottom-0 md:relative shadow-2xl">
-                    <div className="h-[70px] px-6 flex items-center gap-4 border-b border-[#2f3336] shrink-0 bg-[#09090b]">
-                        <button onClick={() => setShowGroupInfo(false)} className="text-gray-400 hover:text-white p-2 -ml-2 rounded-full hover:bg-white/10 transition"><X size={20} /></button>
-                        <h3 className="text-white font-medium text-[16px]">Contact Info</h3>
+                <div className="w-[320px] bg-[var(--bg-secondary)] border-l border-[var(--border-color)] shrink-0 flex flex-col z-30 animate-slide-in-right h-full absolute right-0 top-0 bottom-0 md:relative shadow-2xl">
+                    <div className="h-[70px] px-6 flex items-center gap-4 border-b border-[var(--border-color)] shrink-0 bg-[var(--bg-secondary)]">
+                        <button onClick={() => setShowGroupInfo(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 -ml-2 rounded-full hover:bg-[var(--bg-tertiary)] transition"><X size={20} /></button>
+                        <h3 className="text-[var(--text-primary)] font-medium text-[16px]">Contact Info</h3>
                     </div>
 
                     <div className="flex-1 overflow-y-auto">
-                        <div className="p-8 flex flex-col items-center border-b border-[#2f3336] gap-4 bg-[#09090b] mb-2">
-                            <div className="w-[120px] h-[120px] rounded-full bg-[#2f3336] flex items-center justify-center text-white font-bold text-5xl shadow-xl ring-4 ring-[#16181c]">
+                        <div className="p-8 flex flex-col items-center border-b border-[var(--border-color)] gap-4 bg-[var(--bg-secondary)] mb-2">
+                            <div className="w-[120px] h-[120px] rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-primary)] font-bold text-5xl shadow-xl ring-4 ring-[var(--border-color)]">
                                 {activeGroup.name[0]}
                             </div>
                             <div className="text-center">
-                                <h2 className="text-white font-semibold text-xl mb-1">{activeGroup.name}</h2>
-                                <p className="text-gray-500 text-sm">Group • {activeGroup.members?.length} participants</p>
+                                <h2 className="text-[var(--text-primary)] font-semibold text-xl mb-1">{activeGroup.name}</h2>
+                                <p className="text-[var(--text-secondary)] text-sm">Group • {activeGroup.members?.length} participants</p>
                             </div>
                         </div>
 
-                        <div className="p-4 bg-[#09090b] mb-2 border-b border-[#2f3336]">
+                        <div className="p-4 bg-[var(--bg-secondary)] mb-2 border-b border-[var(--border-color)]">
                             <p className="text-[#1d9bf0] text-sm font-medium mb-1">Description</p>
-                            <p className="text-gray-300 text-[14px] leading-relaxed">
+                            <p className="text-[var(--text-primary)] text-[14px] leading-relaxed">
                                 {activeGroup.description || "No description provided."}
                             </p>
-                            <p className="text-gray-600 text-xs mt-3">Created by {groups.find(g => g._id === activeGroup._id)?.members?.[0]?.name || 'Admin'} </p>
+                            <p className="text-[var(--text-secondary)] text-xs mt-3">Created by {groups.find(g => g._id === activeGroup._id)?.members?.[0]?.name || 'Admin'} </p>
                         </div>
 
-                        <div className="bg-[#09090b]">
+                        <div className="bg-[var(--bg-secondary)]">
                             <div className="p-4 flex justify-between items-center">
-                                <span className="text-gray-400 text-sm font-medium">{activeGroup.members?.length} Participants</span>
-                                <Search size={16} className="text-gray-500 hover:text-white cursor-pointer" />
+                                <span className="text-[var(--text-secondary)] text-sm font-medium">{activeGroup.members?.length} Participants</span>
+                                <Search size={16} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer" />
                             </div>
 
                             {(activeGroup.members || []).map((member, idx) => (
-                                <div key={idx} className="flex items-center gap-3 p-3 hover:bg-[#16181c] transition cursor-pointer group px-6">
-                                    <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center text-xs text-white border border-[#2f3336]">
+                                <div key={idx} className="flex items-center gap-3 p-3 hover:bg-[var(--bg-tertiary)] transition cursor-pointer group px-6">
+                                    <div className="w-9 h-9 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-xs text-[var(--test-primary)] border border-[var(--border-color)] transition-colors">
                                         {member.name ? member.name[0] : 'U'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-center">
-                                            <p className="text-white text-[15px] font-normal truncate">{member.name || 'Unknown User'}</p>
-                                            {member.role === 'cr' && <span className="text-[#005c4b] text-[10px] border border-[#005c4b] px-1 rounded text-xs">Admin</span>}
+                                        <div className="flex justify-between">
+                                            <h4 className="text-sm font-medium text-[var(--text-primary)] truncate">{member.name} {member._id === user._id && "(You)"}</h4>
+                                            {/* Admin logic would go here */}
                                         </div>
+                                        <p className="text-xs text-[var(--text-secondary)]">Student</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
+
+                        <div className="p-4 mt-4">
+                            <button onClick={() => { setActiveGroup(null); setShowGroupInfo(false); }} className="flex items-center gap-3 text-red-500 p-3 hover:bg-red-500/10 w-full rounded-xl transition text-sm font-medium">
+                                <LogOut size={18} /> Exit Group
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             )}
 
-            {/* Context Menu */}
-            {contextMenu && (
-                <>
-                    <div className="fixed inset-0 z-[90]" onClick={() => setContextMenu(null)} />
-                    <div
-                        className="fixed bg-[#16181c] border border-[#2f3336] rounded-xl shadow-2xl z-[100] py-2 w-48 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
-                        style={{ top: Math.min(contextMenu.y, window.innerHeight - 200), left: Math.min(contextMenu.x, window.innerWidth - 200) }}
-                    >
-                        {(contextMenu.type === 'image' || contextMenu.type === 'video' || contextMenu.type === 'audio' || contextMenu.type === 'file') && (
-                            <a
-                                href={contextMenu.fileUrl}
-                                target="_blank"
-                                download
-                                className="block w-full text-left px-4 py-3 hover:bg-[#2f3336] text-sm text-white flex items-center gap-3 transition"
-                                onClick={() => setContextMenu(null)}
-                            >
-                                <Paperclip size={16} /> Download
-                            </a>
-                        )}
-
-                        {/* Copy Text */}
-                        {contextMenu.type === 'text' && (
-                            <button
-                                onClick={() => { navigator.clipboard.writeText(messages.find(m => m._id === contextMenu.messageId)?.content || ""); setContextMenu(null); }}
-                                className="w-full text-left px-4 py-3 hover:bg-[#2f3336] text-sm text-white flex items-center gap-3 transition"
-                            >
-                                <File size={16} /> Copy Text
-                            </button>
-                        )}
-
-                        {/* Reply */}
-                        <button
-                            onClick={() => {
-                                setReplyingTo({
-                                    id: contextMenu.messageId,
-                                    content: contextMenu.type === 'text' ? messages.find(m => m._id === contextMenu.messageId)?.content : `[${contextMenu.type}]`,
-                                    senderName: messages.find(m => m._id === contextMenu.messageId)?.senderName
-                                });
-                                setContextMenu(null);
-                                fileInputRef.current?.focus(); // Focus input? logic needs element ref
-                            }}
-                            className="w-full text-left px-4 py-3 hover:bg-[#2f3336] text-sm text-white flex items-center gap-3 transition"
-                        >
-                            <MessageSquare size={16} /> Reply
-                        </button>
-
-                        {/* Delete (Only for sender or admin) */}
-                        {(contextMenu.senderId === user._id || user.role === 'cr') && (
-                            <button
-                                onClick={handleDeleteMsg}
-                                className="w-full text-left px-4 py-3 hover:bg-[#2f3336] text-sm text-red-500 flex items-center gap-3 transition border-t border-[#2f3336]"
-                            >
-                                <Trash2 size={16} /> Delete Message
-                            </button>
-                        )}
-
-                        {(contextMenu.senderId !== user._id && user.role !== 'cr') && (
-                            <div className="px-4 py-2 text-xs text-gray-500 italic">No actions available</div>
-                        )}
-                    </div>
-                </>
-            )}
 
             {/* Create Group Modal */}
             {showCreateModal && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#16181c] border border-[#2f3336] rounded-2xl w-full max-w-md p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold text-white">Create New Group</h2>
-                            <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-white"><X /></button>
-                        </div>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[var(--bg-secondary)] w-full max-w-md rounded-2xl p-6 border border-[var(--border-color)] shadow-2xl animate-fade-in-up">
+                        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">New Group</h2>
                         <input
-                            className="w-full bg-black border border-[#2f3336] rounded-xl px-4 py-3 text-white mb-4 focus:border-[#1d9bf0] outline-none"
+                            className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:border-[#1d9bf0] outline-none mb-3"
                             placeholder="Group Name"
                             value={newGroupData.name}
                             onChange={(e) => setNewGroupData({ ...newGroupData, name: e.target.value })}
                         />
                         <textarea
-                            className="w-full bg-black border border-[#2f3336] rounded-xl px-4 py-3 text-white mb-6 focus:border-[#1d9bf0] outline-none h-24 resize-none"
-                            placeholder="Description (Optional)"
+                            className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:border-[#1d9bf0] outline-none mb-6 min-h-[100px]"
+                            placeholder="Description"
                             value={newGroupData.description}
                             onChange={(e) => setNewGroupData({ ...newGroupData, description: e.target.value })}
                         />
-                        <button
-                            onClick={handleCreateGroup}
-                            className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3 rounded-xl transition"
-                        >
-                            Create Group
-                        </button>
+                        <div className="flex justify-end gap-3">
+                            <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium">Cancel</button>
+                            <button onClick={handleCreateGroup} className="px-6 py-2 bg-[#1d9bf0] text-white rounded-xl font-bold hover:bg-[#1a8cd8] transition shadow-lg shadow-blue-500/20">Create</button>
+                        </div>
                     </div>
                 </div>
             )}

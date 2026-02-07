@@ -98,24 +98,24 @@ export default function Dashboard() {
 
         {/* 🔹 MAIN SECTION: SCHEDULE */}
         <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <div className="bg-[#000000] border border-[#2f3336] rounded-2xl overflow-hidden min-h-[500px] relative shadow-2xl">
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl overflow-hidden min-h-[500px] relative shadow-2xl transition-all duration-300">
 
             {/* Header */}
-            <div className="p-6 border-b border-[#2f3336] flex justify-between items-center sticky top-0 bg-[#000000]/95 backdrop-blur-md z-10">
+            <div className="p-6 border-b border-[var(--border-color)] flex justify-between items-center sticky top-0 bg-[var(--bg-secondary)]/95 backdrop-blur-md z-10 transition-colors">
               <div>
-                <h2 className="text-lg font-bold text-white tracking-wide uppercase flex items-center gap-3">
+                <h2 className="text-lg font-bold text-[var(--text-primary)] tracking-wide uppercase flex items-center gap-3 transition-colors">
                   Academic Schedule
-                  <span className="text-[10px] bg-[#1d9bf0]/10 text-[#1d9bf0] px-2 py-0.5 rounded border border-[#1d9bf0]/20 font-bold tracking-widest">
+                  <span className="text-[10px] bg-[var(--accent-blue)]/10 text-[var(--accent-blue)] px-2 py-0.5 rounded border border-[var(--accent-blue)]/20 font-bold tracking-widest">
                     {user.branch} • SEC {user.section}
                   </span>
                 </h2>
-                <p className="text-[#71767b] text-xs mt-1 font-medium tracking-wide">TODAY'S TIMELINE</p>
+                <p className="text-[var(--text-secondary)] text-xs mt-1 font-medium tracking-wide transition-colors">TODAY'S TIMELINE</p>
               </div>
 
               {user.role === 'cr' && (
                 <button
                   onClick={() => setShowAddClass(true)}
-                  className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
+                  className="bg-[var(--text-primary)] text-[var(--bg-secondary)] hover:opacity-90 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
                 >
                   <CalendarPlus size={14} /> Add Class
                 </button>
@@ -125,18 +125,18 @@ export default function Dashboard() {
             {/* Content */}
             <div className="p-6">
               {loading ? (
-                <div className="text-center py-20 text-[#71767b] text-sm font-medium tracking-wide animate-pulse">SYNCING SCHEDULE...</div>
+                <div className="text-center py-20 text-[var(--text-secondary)] text-sm font-medium tracking-wide animate-pulse">SYNCING SCHEDULE...</div>
               ) : classes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[#2f3336] rounded-2xl bg-[#16181c]/50">
-                  <div className="w-16 h-16 bg-[#2f3336]/50 rounded-full flex items-center justify-center mb-4">
-                    <CalendarOff className="text-[#71767b]" size={28} />
+                <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-[var(--border-color)] rounded-2xl bg-[var(--bg-tertiary)]/50 transition-colors">
+                  <div className="w-16 h-16 bg-[var(--border-color)]/50 rounded-full flex items-center justify-center mb-4 transition-colors">
+                    <CalendarOff className="text-[var(--text-secondary)]" size={28} />
                   </div>
-                  <h3 className="text-base font-bold text-white mb-1">No Classes Scheduled</h3>
-                  <p className="text-[#71767b] text-xs max-w-xs">
+                  <h3 className="text-base font-bold text-[var(--text-primary)] mb-1 transition-colors">No Classes Scheduled</h3>
+                  <p className="text-[var(--text-secondary)] text-xs max-w-xs transition-colors">
                     You're all caught up! No academic sessions for today.
                   </p>
                   {user.role === 'cr' && (
-                    <p className="text-xs text-[#1d9bf0] mt-4 cursor-pointer hover:underline font-bold uppercase tracking-wide" onClick={() => setShowAddClass(true)}>
+                    <p className="text-xs text-[var(--accent-blue)] mt-4 cursor-pointer hover:underline font-bold uppercase tracking-wide" onClick={() => setShowAddClass(true)}>
                       + Schedule a Class
                     </p>
                   )}
@@ -164,16 +164,16 @@ export default function Dashboard() {
       {/* Add Class Modal */}
       {showAddClass && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-scale-in">
-          <div className="bg-[#000000] border border-[#2f3336] p-8 rounded-2xl w-full max-w-md shadow-2xl relative">
-            <h3 className="text-lg font-bold text-white mb-1 uppercase tracking-wide">New Session</h3>
-            <p className="text-xs text-[#71767b] mb-6">Schedule a new class for {user.branch} - {user.section}</p>
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-8 rounded-2xl w-full max-w-md shadow-2xl relative transition-colors">
+            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1 uppercase tracking-wide transition-colors">New Session</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-6 transition-colors">Schedule a new class for {user.branch} - {user.section}</p>
 
             <div className="space-y-5">
               <div>
-                <label className="text-[10px] text-[#71767b] font-bold uppercase tracking-widest mb-2 block">Subject Name</label>
+                <label className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest mb-2 block transition-colors">Subject Name</label>
                 <input
                   placeholder="e.g. Advanced Algorithms"
-                  className="w-full bg-[#16181c] border border-[#2f3336] rounded-lg px-4 py-3 text-white outline-none focus:border-[#1d9bf0] transition-colors placeholder:text-[#71767b] text-sm"
+                  className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg px-4 py-3 text-[var(--text-primary)] outline-none focus:border-[#1d9bf0] transition-colors placeholder:text-[var(--text-secondary)] text-sm"
                   value={newClass.subject}
                   onChange={e => setNewClass({ ...newClass, subject: e.target.value })}
                   autoFocus
@@ -182,14 +182,14 @@ export default function Dashboard() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] text-[#71767b] font-bold uppercase tracking-widest mb-2 block flex items-center gap-1"><Clock size={10} /> Start Time</label>
+                  <label className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest mb-2 block flex items-center gap-1 transition-colors"><Clock size={10} /> Start Time</label>
                   <PremiumTimeInput
                     value={newClass.startTime}
                     onChange={(val) => setNewClass({ ...newClass, startTime: val })}
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-[#71767b] font-bold uppercase tracking-widest mb-2 block flex items-center gap-1"><Clock size={10} /> End Time</label>
+                  <label className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest mb-2 block flex items-center gap-1 transition-colors"><Clock size={10} /> End Time</label>
                   <PremiumTimeInput
                     value={newClass.endTime}
                     onChange={(val) => setNewClass({ ...newClass, endTime: val })}
@@ -198,26 +198,26 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <label className="text-[10px] text-[#71767b] font-bold uppercase tracking-widest mb-2 block flex items-center gap-1"><MapPin size={10} /> Location</label>
+                <label className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest mb-2 block flex items-center gap-1 transition-colors"><MapPin size={10} /> Location</label>
                 <input
                   placeholder="e.g. Room 302, Academic Block A"
-                  className="w-full bg-[#16181c] border border-[#2f3336] rounded-lg px-4 py-3 text-white outline-none focus:border-[#1d9bf0] transition-colors placeholder:text-[#71767b] text-sm"
+                  className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg px-4 py-3 text-[var(--text-primary)] outline-none focus:border-[#1d9bf0] transition-colors placeholder:text-[var(--text-secondary)] text-sm"
                   value={newClass.room}
                   onChange={e => setNewClass({ ...newClass, room: e.target.value })}
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-8 pt-4 border-t border-[#2f3336]">
+            <div className="flex gap-3 mt-8 pt-4 border-t border-[var(--border-color)]">
               <button
                 onClick={() => setShowAddClass(false)}
-                className="flex-1 text-[#71767b] py-2.5 hover:text-white hover:bg-white/5 rounded-lg transition-colors font-bold text-xs uppercase"
+                className="flex-1 text-[var(--text-secondary)] py-2.5 hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/5 rounded-lg transition-colors font-bold text-xs uppercase"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddClass}
-                className="flex-1 bg-white text-black rounded-lg py-2.5 font-bold text-xs uppercase hover:bg-gray-200 transition-all shadow-lg"
+                className="flex-1 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg py-2.5 font-bold text-xs uppercase hover:opacity-90 transition-all shadow-lg"
               >
                 Create Schedule
               </button>

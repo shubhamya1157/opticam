@@ -78,24 +78,24 @@ export default function Notifications() {
     return (
         <div className="max-w-3xl mx-auto min-h-[calc(100vh-140px)] animate-fade-in font-sans">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 border-b border-white/10 pb-4">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 border-b border-[var(--border-color)] pb-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-white flex items-center gap-3 mb-1">
+                    <h2 className="text-3xl font-bold text-[var(--text-primary)] flex items-center gap-3 mb-1">
                         <Bell className="text-[#1d9bf0]" /> Notifications
                     </h2>
-                    <p className="text-gray-400 text-sm">Stay updated with your academic life</p>
+                    <p className="text-[var(--text-secondary)] text-sm">Stay updated with your academic life</p>
                 </div>
 
-                <div className="flex items-center gap-4 bg-[#0f1419] p-1 rounded-xl border border-white/5">
+                <div className="flex items-center gap-4 bg-[var(--bg-secondary)] p-1 rounded-xl border border-[var(--border-color)] shadow-sm">
                     <button
                         onClick={() => setActiveTab("all")}
-                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === "all" ? "bg-[#1d9bf0] text-white shadow-lg shadow-blue-500/20" : "text-gray-500 hover:text-white"}`}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === "all" ? "bg-[#1d9bf0] text-white shadow-lg shadow-blue-500/20" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
                     >
                         All
                     </button>
                     <button
                         onClick={() => setActiveTab("unread")}
-                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === "unread" ? "bg-[#1d9bf0] text-white shadow-lg shadow-blue-500/20" : "text-gray-500 hover:text-white"}`}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === "unread" ? "bg-[#1d9bf0] text-white shadow-lg shadow-blue-500/20" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
                     >
                         Unread
                     </button>
@@ -115,17 +115,17 @@ export default function Notifications() {
             {/* List */}
             <div className="space-y-8">
                 {Object.keys(groupedNotifications).length === 0 ? (
-                    <div className="text-center py-20 bg-[#0f1419]/50 border border-dashed border-white/10 rounded-3xl animate-fade-in-up">
-                        <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Bell className="text-gray-500" size={32} />
+                    <div className="text-center py-20 bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-3xl animate-fade-in-up">
+                        <div className="w-16 h-16 bg-[var(--bg-tertiary)] rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Bell className="text-[var(--text-secondary)]" size={32} />
                         </div>
-                        <h3 className="text-white font-medium text-lg">All caught up!</h3>
-                        <p className="text-gray-500 mt-1">No new notifications to display.</p>
+                        <h3 className="text-[var(--text-primary)] font-medium text-lg">All caught up!</h3>
+                        <p className="text-[var(--text-secondary)] mt-1">No new notifications to display.</p>
                     </div>
                 ) : (
                     Object.entries(groupedNotifications).map(([date, notes]) => (
                         <div key={date} className="animate-fade-in-up">
-                            <h3 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-4 pl-1 sticky top-0 bg-[#000000]/80 backdrop-blur-sm py-2 z-10">
+                            <h3 className="text-[var(--text-secondary)] text-xs font-bold uppercase tracking-wider mb-4 pl-1 sticky top-0 bg-[var(--bg-primary)]/90 backdrop-blur-sm py-2 z-10">
                                 {date}
                             </h3>
                             <div className="space-y-3">
@@ -134,8 +134,8 @@ export default function Notifications() {
                                         key={note._id}
                                         onClick={() => handleNotificationClick(note)}
                                         className={`group relative flex items-start gap-4 p-5 rounded-2xl border transition-all cursor-pointer overflow-hidden ${note.isRead
-                                            ? "bg-[#0f1419]/30 border-white/5 hover:bg-[#0f1419]/50"
-                                            : "bg-[#0f1419] border-[#1d9bf0]/30 shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:border-[#1d9bf0] hover:shadow-[0_0_15px_rgba(29,155,240,0.15)] hover:-translate-y-0.5"
+                                            ? "bg-[var(--bg-secondary)]/50 border-[var(--border-color)] hover:bg-[var(--bg-secondary)]"
+                                            : "bg-[var(--bg-secondary)] border-[#1d9bf0]/30 shadow-md hover:border-[#1d9bf0] hover:shadow-lg hover:-translate-y-0.5"
                                             }`}
                                     >
                                         {/* Status Indicator */}
@@ -143,22 +143,22 @@ export default function Notifications() {
                                             <div className="absolute top-5 right-5 w-2 h-2 bg-[#1d9bf0] rounded-full shadow-[0_0_8px_#1d9bf0] animate-pulse"></div>
                                         )}
 
-                                        <div className={`mt-0.5 p-3 rounded-xl shrink-0 transition-transform group-hover:scale-110 ${note.isRead ? 'bg-gray-800/50 grayscale' : 'bg-[#1e2732] shadow-inner'}`}>
+                                        <div className={`mt-0.5 p-3 rounded-xl shrink-0 transition-transform group-hover:scale-110 ${note.isRead ? 'bg-[var(--bg-tertiary)] grayscale opacity-70' : 'bg-[var(--bg-tertiary)] shadow-inner'}`}>
                                             {getIcon(note.type)}
                                         </div>
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start">
-                                                <h4 className={`text-base font-semibold mb-1 truncate pr-6 ${note.isRead ? 'text-gray-400' : 'text-white'}`}>
+                                                <h4 className={`text-base font-semibold mb-1 truncate pr-6 ${note.isRead ? 'text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}>
                                                     {note.title || "New Notification"}
                                                 </h4>
                                             </div>
-                                            <p className={`text-sm leading-relaxed ${note.isRead ? 'text-gray-600' : 'text-gray-300'}`}>
+                                            <p className={`text-sm leading-relaxed ${note.isRead ? 'text-[var(--text-secondary)]' : 'text-[var(--text-primary)]/80'}`}>
                                                 {note.message}
                                             </p>
 
                                             <div className="flex items-center gap-4 mt-3">
-                                                <span className="text-[11px] text-gray-500 flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded">
+                                                <span className="text-[11px] text-[var(--text-secondary)] flex items-center gap-1.5 bg-[var(--bg-tertiary)] px-2 py-1 rounded">
                                                     <Clock size={10} />
                                                     {new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>

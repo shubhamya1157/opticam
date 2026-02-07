@@ -79,14 +79,14 @@ export default function Otp() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="bg-[#0f1419] p-8 rounded-xl w-80">
+    <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center transition-colors duration-300">
+      <div className="bg-[var(--bg-secondary)] p-8 rounded-xl w-80 shadow-xl border border-[var(--border-color)]">
 
-        <h2 className="text-white text-xl text-center mb-2">
+        <h2 className="text-[var(--text-primary)] text-xl text-center mb-2 font-bold">
           Verify OTP
         </h2>
 
-        <p className="text-gray-400 text-sm text-center mb-6">
+        <p className="text-[var(--text-secondary)] text-sm text-center mb-6">
           OTP sent to your official college email
         </p>
 
@@ -96,11 +96,11 @@ export default function Otp() {
           value={otp}
           onChange={(e) => setOtp(e.target.value)}
           maxLength={6}
-          className="w-full p-2 rounded bg-black border border-gray-700 text-white text-center tracking-widest"
+          className="w-full p-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] text-center tracking-widest outline-none focus:border-[#1d9bf0] focus:ring-1 focus:ring-[#1d9bf0] transition-all"
         />
 
         {error && (
-          <p className="text-red-400 text-sm text-center mt-3">
+          <p className="text-red-500 text-sm text-center mt-3 bg-red-100 dark:bg-red-500/10 p-1.5 rounded-lg">
             {error}
           </p>
         )}
@@ -108,7 +108,7 @@ export default function Otp() {
         <button
           onClick={handleVerify}
           disabled={loading}
-          className="w-full mt-4 bg-[#1d9bf0] py-2 rounded text-white font-semibold disabled:opacity-50"
+          className="w-full mt-4 bg-[#1d9bf0] hover:bg-[#1a8cd8] py-2 rounded-lg text-white font-semibold disabled:opacity-50 transition-colors shadow-lg shadow-blue-500/20"
         >
           {loading ? "Verifying..." : "Verify"}
         </button>
@@ -116,4 +116,3 @@ export default function Otp() {
     </div>
   );
 }
-

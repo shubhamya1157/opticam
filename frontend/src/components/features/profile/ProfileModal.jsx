@@ -59,19 +59,19 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser }) {
         const value = formData[fieldKey];
 
         return (
-            <div className="flex items-center gap-4 p-3 bg-white/5 rounded-xl border border-white/10">
-                <div className="p-2 bg-[#1d9bf0]/20 text-[#1d9bf0] rounded-lg">
+            <div className="flex items-center gap-4 p-3 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border-color)]">
+                <div className="p-2 bg-[#1d9bf0]/10 text-[#1d9bf0] rounded-lg">
                     {icon}
                 </div>
                 <div className="flex-1">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{label}</p>
+                    <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-1">{label}</p>
 
                     {isEditable ? (
                         options ? (
                             <select
                                 value={value}
                                 onChange={(e) => setFormData({ ...formData, [fieldKey]: e.target.value })}
-                                className="w-full bg-black/50 text-white border border-gray-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-[#1d9bf0]"
+                                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded px-2 py-1 text-sm focus:outline-none focus:border-[#1d9bf0]"
                             >
                                 <option value="">Select {label}</option>
                                 {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -81,11 +81,11 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser }) {
                                 type="text"
                                 value={value}
                                 onChange={(e) => setFormData({ ...formData, [fieldKey]: e.target.value })}
-                                className="w-full bg-black/50 text-white border border-gray-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-[#1d9bf0]"
+                                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded px-2 py-1 text-sm focus:outline-none focus:border-[#1d9bf0]"
                             />
                         )
                     ) : (
-                        <p className="text-white font-medium">{value || "Not set"}</p>
+                        <p className="text-[var(--text-primary)] font-medium">{value || "Not set"}</p>
                     )}
                 </div>
             </div>
@@ -93,41 +93,41 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser }) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             {/* Modal Card */}
-            <div className="w-full max-w-2xl bg-[#0f1419] border border-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
+            <div className="w-full max-w-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
 
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-white z-10 p-2 bg-black/20 rounded-full"
+                    className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] z-10 p-2 bg-[var(--bg-tertiary)] rounded-full hover:bg-[var(--border-color)] transition"
                 >
                     <X size={20} />
                 </button>
 
                 {/* Left Side: Photo & Identity (Static) */}
-                <div className="md:w-1/3 bg-gradient-to-b from-[#1d9bf0]/10 to-transparent p-8 flex flex-col items-center justify-center border-r border-gray-800">
+                <div className="md:w-1/3 bg-gradient-to-b from-[#1d9bf0]/10 to-[var(--bg-secondary)] p-8 flex flex-col items-center justify-center border-r border-[var(--border-color)]">
                     <div className="w-32 h-32 rounded-full p-1.5 bg-gradient-to-br from-[#1d9bf0] to-purple-500 mb-4 shadow-xl shadow-[#1d9bf0]/20 relative">
                         <div className="absolute inset-0 bg-white/20 blur-xl opacity-30 rounded-full"></div>
                         <img
                             src={`https://api.dicebear.com/9.x/notionists/svg?seed=${user?.name}&backgroundColor=b6e3f4,c0aede,d1d4f9`}
                             alt="Profile"
-                            className="w-full h-full rounded-full bg-[#0f1419] relative z-10"
+                            className="w-full h-full rounded-full bg-[var(--bg-secondary)] relative z-10"
                         />
                     </div>
 
-                    <h2 className="text-xl font-bold text-white text-center mb-1">{user?.name}</h2>
+                    <h2 className="text-xl font-bold text-[var(--text-primary)] text-center mb-1">{user?.name}</h2>
                     <p className="text-[#1d9bf0] text-sm font-medium bg-[#1d9bf0]/10 px-3 py-1 rounded-full border border-[#1d9bf0]/20">
                         {user?.role === 'cr' ? 'Class Representative' : 'Student'}
                     </p>
 
                     {/* Static Identity Fields */}
                     <div className="mt-8 w-full space-y-3">
-                        <div className="flex items-center gap-3 text-sm text-gray-400">
+                        <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
                             <Mail size={16} />
                             <span className="truncate">{user?.email}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-400">
+                        <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
                             <IdCard size={16} />
                             <span>{user?.collegeId || "No ID"}</span>
                         </div>
@@ -137,12 +137,12 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser }) {
                 {/* Right Side: Details & Edit Form */}
                 <div className="md:w-2/3 p-8">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-white">Profile Details</h3>
+                        <h3 className="text-xl font-bold text-[var(--text-primary)]">Profile Details</h3>
 
                         {!isEditing ? (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="flex items-center gap-2 text-sm bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl transition border border-white/10"
+                                className="flex items-center gap-2 text-sm bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] px-4 py-2 rounded-xl transition border border-[var(--border-color)]"
                             >
                                 <Edit size={16} /> Edit Profile
                             </button>
@@ -161,10 +161,10 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser }) {
 
                     {/* Editing Actions */}
                     {isEditing && (
-                        <div className="flex gap-3 justify-end mt-8 border-t border-gray-800 pt-6">
+                        <div className="flex gap-3 justify-end mt-8 border-t border-[var(--border-color)] pt-6">
                             <button
                                 onClick={() => { setIsEditing(false); setError(""); }}
-                                className="text-gray-400 hover:text-white px-4 py-2 text-sm"
+                                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-4 py-2 text-sm"
                             >
                                 Cancel
                             </button>
@@ -180,10 +180,10 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser }) {
 
                     {/* Logout (Only visible when not editing) */}
                     {!isEditing && (
-                        <div className="mt-8 pt-6 border-t border-gray-800 flex justify-end">
+                        <div className="mt-8 pt-6 border-t border-[var(--border-color)] flex justify-end">
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 px-4 py-2 rounded-xl transition text-sm"
+                                className="flex items-center gap-2 text-red-500 hover:text-red-600 hover:bg-red-500/10 px-4 py-2 rounded-xl transition text-sm"
                             >
                                 <LogOut size={16} /> Logout
                             </button>

@@ -21,28 +21,26 @@ export default function Topbar({ user, toggleSidebar, isSidebarOpen }) {
   const { text, icon } = getGreeting();
 
   return (
-    <div className="flex justify-between items-center mb-4 p-4 bg-[#050507]/90 backdrop-blur-xl border border-white/10 rounded-3xl ring-1 ring-white/5 shadow-2xl relative z-10 animate-fade-in mt-1 mr-2">
+    <div className="flex justify-between items-center mb-4 p-4 bg-[var(--bg-sidebar)] backdrop-blur-xl border border-[var(--sidebar-border)] rounded-3xl ring-1 ring-[var(--border-color)]/20 shadow-2xl relative z-10 animate-fade-in mt-1 mr-2 transition-colors duration-300">
       <div className="flex items-center gap-6">
-
-
 
         {location.pathname === '/dashboard' && (
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               {icon}
-              <span className="text-xs font-semibold tracking-widest text-[#71767b] uppercase font-['Outfit']">
+              <span className="text-xs font-semibold tracking-widest text-[var(--text-secondary)] uppercase font-['Outfit']">
                 {text}
               </span>
             </div>
-            <h1 className="text-3xl font-[700] text-white tracking-tight font-['Outfit'] leading-tight">
+            <h1 className="text-3xl font-[700] text-[var(--text-primary)] tracking-tight font-['Outfit'] leading-tight">
               Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1d9bf0] to-[#8b5cf6]">{user.name.split(' ')[0]}</span>
             </h1>
 
             {/* Sub-greeting - Minimalist & Elegant */}
             <div className="flex items-center gap-3 mt-2 animate-fade-in opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
               <div className="h-[2px] w-8 bg-gradient-to-r from-[#1d9bf0] to-transparent rounded-full"></div>
-              <p className="text-sm text-[#8b98a5] font-['Outfit'] tracking-wide">
-                Let's make today <span className="text-white font-bold tracking-wider">PRODUCTIVE</span>
+              <p className="text-sm text-[var(--text-secondary)] font-['Outfit'] tracking-wide">
+                Let's make today <span className="text-[var(--text-primary)] font-bold tracking-wider">PRODUCTIVE</span>
               </p>
             </div>
           </div>
@@ -52,7 +50,7 @@ export default function Topbar({ user, toggleSidebar, isSidebarOpen }) {
       {location.pathname === '/dashboard' && (
         <div className="hidden md:block text-right">
           <div className="flex flex-col items-end">
-            <h2 className="text-4xl font-black tabular-nums text-white tracking-tighter leading-none">
+            <h2 className="text-4xl font-black tabular-nums text-[var(--text-primary)] tracking-tighter leading-none">
               {date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
             </h2>
             <p className="text-[#1d9bf0] font-bold text-[10px] tracking-[0.2em] uppercase mt-1">

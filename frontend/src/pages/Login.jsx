@@ -92,29 +92,29 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-full max-w-md bg-[#0f1419] rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center transition-colors duration-300">
+      <div className="w-full max-w-md bg-[var(--bg-secondary)] rounded-2xl shadow-xl p-8 border border-[var(--border-color)]">
 
         {/* Logo */}
         <div className="flex flex-col items-center mb-6">
           <img
             src={logo}
             alt="OptiCam Logo"
-            className="w-24 h-24 rounded-full border border-gray-700 p-1 bg-black mb-4"
+            className="w-24 h-24 rounded-full border border-[var(--border-color)] p-1 bg-[var(--bg-tertiary)] mb-4"
           />
-          <h1 className="text-3xl font-bold text-white">OptiCam</h1>
-          <p className="text-gray-400 text-sm">
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">OptiCam</h1>
+          <p className="text-[var(--text-secondary)] text-sm">
             Optimize Your Campus Time
           </p>
         </div>
 
         {/* Role */}
-        <div className="flex mb-6 bg-black rounded-xl p-1">
+        <div className="flex mb-6 bg-[var(--bg-tertiary)] rounded-xl p-1 border border-[var(--border-color)]">
           <button
             onClick={() => setRole("student")}
-            className={`w-1/2 py-2 rounded-xl flex justify-center gap-2 ${role === "student"
-              ? "bg-[#1d9bf0] text-white"
-              : "text-gray-400"
+            className={`w-1/2 py-2 rounded-xl flex justify-center gap-2 font-medium transition-all ${role === "student"
+              ? "bg-[#1d9bf0] text-white shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
           >
             <User size={18} /> Student
@@ -122,9 +122,9 @@ export default function Login() {
 
           <button
             onClick={() => setRole("cr")}
-            className={`w-1/2 py-2 rounded-xl flex justify-center gap-2 ${role === "cr"
-              ? "bg-[#1d9bf0] text-white"
-              : "text-gray-400"
+            className={`w-1/2 py-2 rounded-xl flex justify-center gap-2 font-medium transition-all ${role === "cr"
+              ? "bg-[#1d9bf0] text-white shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
           >
             <Users size={18} /> CR
@@ -141,7 +141,7 @@ export default function Login() {
               placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-transparent px-3 py-2 text-white focus:outline-none"
+              className="w-full bg-transparent px-3 py-2 text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none"
             />
           </Field>
 
@@ -152,7 +152,7 @@ export default function Login() {
               placeholder="College ID (2025kucp1097)"
               value={collegeId}
               onChange={(e) => setCollegeId(e.target.value.toLowerCase())}
-              className="w-full bg-transparent px-3 py-2 text-white focus:outline-none"
+              className="w-full bg-transparent px-3 py-2 text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none"
             />
           </Field>
 
@@ -201,7 +201,7 @@ export default function Login() {
               placeholder="Email (e.g. personal or college)"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-transparent px-3 py-2 text-white focus:outline-none"
+              className="w-full bg-transparent px-3 py-2 text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none"
             />
           </Field>
 
@@ -209,7 +209,7 @@ export default function Login() {
 
         {/* Error */}
         {error && (
-          <p className="text-red-400 text-sm mt-4 text-center">
+          <p className="text-red-500 text-sm mt-4 text-center bg-red-100 dark:bg-red-500/10 p-2 rounded-lg">
             {error}
           </p>
         )}
@@ -218,9 +218,9 @@ export default function Login() {
         <button
           onClick={handleContinue}
           disabled={loading}
-          className={`w-full mt-6 py-2 rounded-xl font-semibold transition flex items-center justify-center gap-2 ${loading
+          className={`w-full mt-6 py-3 rounded-xl font-bold text-lg transition flex items-center justify-center gap-2 shadow-lg ${loading
             ? "bg-[#1d9bf0]/50 cursor-not-allowed text-white/50"
-            : "bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white cursor-pointer"
+            : "bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white cursor-pointer shadow-blue-500/20 hover:shadow-blue-500/30 hover:-translate-y-0.5"
             }`}
         >
           {loading ? (
@@ -233,7 +233,7 @@ export default function Login() {
           )}
         </button>
 
-        <p className="text-xs text-gray-500 text-center mt-4">
+        <p className="text-xs text-[var(--text-secondary)] text-center mt-4">
           OTP will be sent to your official institute email
         </p>
       </div>
@@ -245,8 +245,8 @@ export default function Login() {
 
 function Field({ icon, children }) {
   return (
-    <div className="flex items-center bg-black border border-gray-700 rounded-xl px-3">
-      <span className="text-gray-400">{icon}</span>
+    <div className="flex items-center bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl px-3 transition-colors focus-within:border-[#1d9bf0] focus-within:ring-1 focus-within:ring-[#1d9bf0]">
+      <span className="text-[var(--text-secondary)]">{icon}</span>
       {children}
     </div>
   );
@@ -254,12 +254,12 @@ function Field({ icon, children }) {
 
 function Select({ icon, value, setValue, children }) {
   return (
-    <div className="flex items-center bg-black border border-gray-700 rounded-xl px-3">
-      <span className="text-gray-400">{icon}</span>
+    <div className="flex items-center bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl px-3 transition-colors focus-within:border-[#1d9bf0]">
+      <span className="text-[var(--text-secondary)]">{icon}</span>
       <select
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="w-full bg-transparent px-3 py-2 text-gray-300 focus:outline-none cursor-pointer placeholder:text-gray-500"
+        className="w-full bg-transparent px-3 py-2 text-[var(--text-primary)] focus:outline-none cursor-pointer placeholder:text-[var(--text-secondary)]"
       >
         {children}
       </select>

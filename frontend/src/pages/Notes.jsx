@@ -148,19 +148,19 @@ export default function Notes() {
     return (
         <div className="w-full h-[calc(100vh-140px)] flex flex-col font-sans animate-fade-in">
             {/* Header / Search */}
-            <div className="flex flex-col md:flex-row justify-between items-center bg-[#202020] p-4 rounded-2xl shadow-lg mb-6 gap-4 sticky top-0 z-10 border border-white/5">
+            <div className="flex flex-col md:flex-row justify-between items-center bg-[var(--bg-secondary)] p-4 rounded-2xl shadow-lg mb-6 gap-4 sticky top-0 z-10 border border-[var(--border-color)]">
                 <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="w-10 h-10 bg-[#1d9bf0] rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                    <div className="w-10 h-10 bg-[var(--accent-blue)] rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                         <LayoutGrid size={22} />
                     </div>
-                    <h2 className="text-white text-xl font-bold tracking-tight">Keep Notes</h2>
+                    <h2 className="text-[var(--text-primary)] text-xl font-bold tracking-tight">Keep Notes</h2>
                 </div>
 
                 <div className="flex-1 w-full md:max-w-xl relative group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#1d9bf0] transition" size={20} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] group-focus-within:text-[var(--accent-blue)] transition" size={20} />
                     <input
                         placeholder="Search notes..."
-                        className="w-full bg-[#151515] text-white pl-12 pr-4 py-3 rounded-xl border border-transparent focus:border-[#1d9bf0]/50 outline-none transition-all shadow-inner"
+                        className="w-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] pl-12 pr-4 py-3 rounded-xl border border-transparent focus:border-[var(--accent-blue)]/50 outline-none transition-all shadow-inner"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -168,7 +168,7 @@ export default function Notes() {
 
                 <button
                     onClick={openCreate}
-                    className="bg-[#1d9bf0] text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-[#188cd8] hover:shadow-[0_0_20px_rgba(29,155,240,0.4)] transition active:scale-95 w-full md:w-auto justify-center"
+                    className="bg-[var(--accent-blue)] text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:opacity-90 hover:shadow-[0_0_20px_rgba(29,155,240,0.4)] transition active:scale-95 w-full md:w-auto justify-center"
                 >
                     <Plus size={20} /> Create
                 </button>
@@ -178,7 +178,7 @@ export default function Notes() {
             <div className="flex-1 overflow-y-auto custom-scrollbar pb-10">
                 {pinnedNotes.length > 0 && (
                     <div className="mb-8">
-                        <h6 className="text-[#1d9bf0] text-xs font-bold uppercase tracking-wider mb-3 ml-1 flex items-center gap-2">
+                        <h6 className="text-[var(--accent-blue)] text-xs font-bold uppercase tracking-wider mb-3 ml-1 flex items-center gap-2">
                             <Pin size={12} className="fill-current" /> Pinned
                         </h6>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in-up">
@@ -188,7 +188,7 @@ export default function Notes() {
                 )}
 
                 {pinnedNotes.length > 0 && otherNotes.length > 0 && (
-                    <h6 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3 ml-1 mt-6">Others</h6>
+                    <h6 className="text-[var(--text-secondary)] text-xs font-bold uppercase tracking-wider mb-3 ml-1 mt-6">Others</h6>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in-up delay-75">
@@ -196,8 +196,8 @@ export default function Notes() {
                 </div>
 
                 {filteredNotes.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-64 text-gray-500 opacity-60">
-                        <LayoutGrid size={64} className="mb-4 text-gray-700" />
+                    <div className="flex flex-col items-center justify-center h-64 text-[var(--text-secondary)] opacity-60">
+                        <LayoutGrid size={64} className="mb-4 text-[var(--text-secondary)]" />
                         <p>No notes found. Capture your ideas!</p>
                     </div>
                 )}
@@ -208,19 +208,19 @@ export default function Notes() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={closeModal}>
                     <div
                         className="w-full max-w-lg rounded-2xl shadow-2xl relative overflow-hidden flex flex-col ring-1 ring-white/10 animate-scale-in"
-                        style={{ backgroundColor: formData.color }}
+                        style={{ backgroundColor: formData.color || "var(--bg-secondary)" }}
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Modal Header */}
                         <div className="flex justify-between items-start p-4 pb-2">
                             <input
                                 placeholder="Title"
-                                className="bg-transparent text-white text-xl font-bold placeholder:text-white/50 w-full outline-none"
+                                className="bg-transparent text-[var(--text-primary)] text-xl font-bold placeholder:text-[var(--text-secondary)] w-full outline-none"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                                 autoFocus
                             />
-                            <button onClick={() => setFormData({ ...formData, isPinned: !formData.isPinned })} className={`p-2 rounded-full hover:bg-black/10 transition ${formData.isPinned ? 'text-white' : 'text-white/30'}`}>
+                            <button onClick={() => setFormData({ ...formData, isPinned: !formData.isPinned })} className={`p-2 rounded-full hover:bg-black/10 transition ${formData.isPinned ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
                                 <Pin size={20} className={formData.isPinned ? "fill-current" : ""} />
                             </button>
                         </div>
@@ -229,16 +229,16 @@ export default function Notes() {
                         <div className="px-4 py-2 flex-1">
                             <textarea
                                 placeholder="Take a note..."
-                                className="w-full bg-transparent text-white/90 placeholder:text-white/40 resize-none outline-none min-h-[150px] text-[16px] leading-relaxed custom-scrollbar"
+                                className="w-full bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] resize-none outline-none min-h-[150px] text-[16px] leading-relaxed custom-scrollbar"
                                 value={formData.content}
                                 onChange={e => setFormData({ ...formData, content: e.target.value })}
                             />
                         </div>
 
                         {/* Modal Footer (Colors & Actions) */}
-                        <div className="p-3 bg-black/20 flex items-center justify-between">
+                        <div className="p-3 bg-[var(--bg-tertiary)] flex items-center justify-between border-t border-[var(--border-color)]">
                             <div className="flex items-center gap-1 overflow-x-auto pb-1 max-w-[250px] custom-scrollbar hide-scrollbar">
-                                <Palette size={18} className="text-white/50 mr-2 shrink-0" />
+                                <Palette size={18} className="text-[var(--text-secondary)] mr-2 shrink-0" />
                                 {colors.map(c => (
                                     <button
                                         key={c.id}
@@ -250,8 +250,8 @@ export default function Notes() {
                                 ))}
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={closeModal} className="px-4 py-2 text-white/70 hover:text-white text-sm font-medium hover:bg-white/10 rounded-lg transition">Close</button>
-                                <button onClick={handleSave} className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-bold shadow-sm transition">Save</button>
+                                <button onClick={closeModal} className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm font-medium hover:bg-[var(--bg-primary)] rounded-lg transition">Close</button>
+                                <button onClick={handleSave} className="px-6 py-2 bg-[var(--bg-primary)] hover:bg-[var(--bg-primary)]/80 text-[var(--text-primary)] rounded-lg text-sm font-bold shadow-sm transition">Save</button>
                             </div>
                         </div>
                     </div>
@@ -265,12 +265,12 @@ function NoteCard({ note, onClick, onPin, onDelete }) {
     return (
         <div
             onClick={onClick}
-            className="rounded-2xl p-5 cursor-pointer border border-white/5 hover:border-white/20 transition-all hover:scale-[1.02] shadow-sm hover:shadow-xl group relative overflow-hidden flex flex-col justify-between min-h-[140px]"
-            style={{ backgroundColor: note.color || '#202020' }}
+            className="rounded-2xl p-5 cursor-pointer border border-[var(--border-color)] hover:border-[var(--accent-blue)]/50 transition-all hover:scale-[1.02] shadow-sm hover:shadow-xl group relative overflow-hidden flex flex-col justify-between min-h-[140px]"
+            style={{ backgroundColor: note.color || 'var(--bg-secondary)' }}
         >
             <div className="mb-8">
-                <h3 className="text-white font-bold text-lg mb-2 leading-tight line-clamp-2">{note.title}</h3>
-                <p className="text-white/80 text-sm whitespace-pre-wrap line-clamp-6 leading-relaxed font-light">{note.content}</p>
+                <h3 className="text-[var(--text-primary)] font-bold text-lg mb-2 leading-tight line-clamp-2 mix-blend-difference" style={{ color: note.color ? '#fff' : 'var(--text-primary)' }}>{note.title}</h3>
+                <p className="text-[var(--text-secondary)] text-sm whitespace-pre-wrap line-clamp-6 leading-relaxed font-light mix-blend-difference" style={{ color: note.color ? '#eee' : 'var(--text-secondary)' }}>{note.content}</p>
             </div>
 
             {/* Hover Actions */}
@@ -291,9 +291,9 @@ function NoteCard({ note, onClick, onPin, onDelete }) {
                 </button>
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-white/40 mt-auto">
+            <div className="flex items-center justify-between text-[11px] text-[var(--text-secondary)] mt-auto mix-blend-difference" style={{ color: note.color ? '#ddd' : 'var(--text-secondary)' }}>
                 <span className="bg-black/10 px-2 py-0.5 rounded uppercase tracking-wider font-bold">{note.category}</span>
-                {note.isPinned && <Pin size={12} className="fill-white/40" />}
+                {note.isPinned && <Pin size={12} className="fill-current" />}
             </div>
         </div>
     );

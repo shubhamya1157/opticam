@@ -3,6 +3,7 @@ import { useLocation, Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import Footer from "./Footer";
+import api from "../../services/api";
 
 export default function Layout() {
     const location = useLocation();
@@ -10,6 +11,34 @@ export default function Layout() {
         const savedUser = localStorage.getItem("opticam_user");
         return location.state?.user || (savedUser ? JSON.parse(savedUser) : { name: "Guest" });
     });
+
+    useEffect(() => {
+        const verifyUser = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                const res = await api.get("/auth/verify-token");
+                if (res.data.success && res.data.user) {
+                    // Only update if different to avoid loops/renders
+                    if (JSON.stringify(res.data.user) !== JSON.stringify(user)) {
+                        console.log("🔄 Syncing User State with Backend:", res.data.user.name);
+                        setUser(res.data.user);
+                        localStorage.setItem("opticam_user", JSON.stringify(res.data.user));
+                    }
+                }
+            } catch (err) {
+                console.error("Session missing or invalid", err);
+                if (err.response?.status === 401) {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("opticam_user");
+                    setUser({ name: "Guest" });
+                }
+            }
+        };
+
+        verifyUser();
+    }, []); // Run once on mount
 
     useEffect(() => {
         if (location.state?.user) {
@@ -40,13 +69,13 @@ export default function Layout() {
     const isCommunity = location.pathname === '/community';
 
     return (
-        <div className="flex bg-black min-h-screen font-sans selection:bg-[#1d9bf0]/30 selection:text-white relative overflow-hidden">
+        <div className="flex bg-[var(--bg-primary)] min-h-screen font-sans selection:bg-[#1d9bf0]/30 selection:text-[var(--text-primary)] relative overflow-hidden transition-colors duration-300">
 
             {/* 🟢 GLOBAL BACKGROUND EFFECTS */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1d9bf0]/5 to-transparent"></div>
                 <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px]"></div>
-                <div className="absolute bottom-0 left-0 w-full h-[300px] bg-gradient-to-t from-black via-black/80 to-transparent z-10"></div>
+                <div className="absolute bottom-0 left-0 w-full h-[300px] bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/80 to-transparent z-10"></div>
             </div>
 
             {/* 🟢 NAVIGATION BAR (SIDEBAR) */}

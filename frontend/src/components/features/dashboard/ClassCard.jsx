@@ -14,10 +14,10 @@ export default function ClassCard({ classData, isCR, onUpdateStatus, onDelete })
   };
 
   return (
-    <div className={`relative glass-card bg-white/[0.02] p-5 rounded-2xl transition-all duration-300 hover:bg-white/[0.05] hover:scale-[1.01] hover:shadow-lg group ${classData.status === 'canceled' ? 'opacity-70 grayscale' : ''}`}>
+    <div className={`relative glass-card p-5 rounded-2xl transition-all duration-300 hover:bg-[var(--bg-tertiary)]/50 hover:scale-[1.01] hover:shadow-lg group border border-[var(--border-color)] ${classData.status === 'canceled' ? 'opacity-70 grayscale' : ''}`}>
 
       {/* Glow Effect on Hover */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[var(--accent-blue)]/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       <div className="flex justify-between items-start relative z-10">
         <div className="flex-1">
@@ -25,17 +25,17 @@ export default function ClassCard({ classData, isCR, onUpdateStatus, onDelete })
             <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${getStatusColor(classData.status)}`}>
               {classData.status === 'scheduled' ? 'Upcoming' : classData.status}
             </span>
-            <span className="text-xs text-gray-500 flex items-center gap-1">
+            <span className="text-xs text-[var(--text-secondary)] flex items-center gap-1">
               <Clock size={12} /> {formatTime(classData.startTime)} - {formatTime(classData.endTime)}
             </span>
           </div>
 
-          <h3 className={`font-bold text-xl text-white mb-1 group-hover:text-blue-400 transition-colors ${classData.status === 'canceled' ? 'line-through text-gray-500' : ''}`}>
+          <h3 className={`font-bold text-xl text-[var(--text-primary)] mb-1 group-hover:text-blue-400 transition-colors ${classData.status === 'canceled' ? 'line-through text-[var(--text-secondary)]' : ''}`}>
             {classData.subject}
           </h3>
 
-          <p className="text-sm text-gray-400 font-medium">
-            Room: <span className="text-white bg-white/10 px-1.5 py-0.5 rounded text-xs">{classData.room}</span>
+          <p className="text-sm text-[var(--text-secondary)] font-medium">
+            Room: <span className="text-[var(--text-primary)] bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">{classData.room}</span>
           </p>
         </div>
 
