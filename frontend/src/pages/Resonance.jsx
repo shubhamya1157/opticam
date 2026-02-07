@@ -7,7 +7,7 @@ import {
     LayoutGrid, List, Layers, Phone, Video, Cpu, Activity, Globe,
     Radio, Hexagon
 } from "lucide-react";
-import { getTasks, createTask, requestConnection, getMyTasks, getMyRequests, approveConnection, rejectConnection, deleteTask, getCachedTasks, getCachedMyTasks } from "../services/resonanceService";
+import { getTasks, createTask, requestConnection, getMyTasks, getMyRequests, approveConnection, rejectConnection, deleteTask, getCachedTasks, getCachedMyTasks, endConnection } from "../services/resonanceService";
 import { io } from "socket.io-client";
 import api from "../services/api";
 
@@ -33,7 +33,7 @@ class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-8 text-center font-mono">
+                <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-8 text-center font-mono md:ml-[300px] transition-all duration-300">
                     <div className="max-w-md">
                         <Activity size={48} className="text-red-500 mx-auto mb-6 animate-pulse" />
                         <h1 className="text-2xl font-black mb-2 tracking-tighter text-red-500">CRITICAL SYSTEM FAILURE</h1>
@@ -61,44 +61,44 @@ const SOCKET_URL = "http://localhost:5001";
 // 🎨 CREATIVE CATEGORY REINVENTION
 const CATEGORIES = [
     {
-        value: "Cerebral Sync",
+        value: "Study Help",
         original: "Study Help",
         icon: Cpu,
         color: "from-cyan-400 to-blue-600",
         accent: "text-cyan-400",
         border: "border-cyan-500/30",
         bg: "bg-cyan-500/10",
-        desc: "Knowledge Transfer Protocol"
+        desc: "Get help with assignments and concepts"
     },
     {
-        value: "Fusion Core",
+        value: "Project Collaboration",
         original: "Project Collaboration",
         icon: Hexagon,
         color: "from-violet-500 to-fuchsia-600",
         accent: "text-violet-400",
         border: "border-violet-500/30",
         bg: "bg-violet-500/10",
-        desc: "Co-Creation Module"
+        desc: "Team up for group projects"
     },
     {
-        value: "Skill Matrix",
+        value: "Skill Exchange",
         original: "Skill Exchange",
         icon: Zap,
         color: "from-amber-400 to-orange-600",
         accent: "text-amber-400",
         border: "border-amber-500/30",
         bg: "bg-amber-500/10",
-        desc: "Ability Upgrade System"
+        desc: "Learn and teach skills"
     },
     {
-        value: "Void Signals",
+        value: "General",
         original: "Other",
         icon: Radio,
         color: "from-emerald-400 to-teal-600",
         accent: "text-emerald-400",
         border: "border-emerald-500/30",
         bg: "bg-emerald-500/10",
-        desc: "Unclassified Frequencies"
+        desc: "Other collaboration needs"
     }
 ];
 
@@ -145,7 +145,8 @@ function Resonance() {
                 setActiveChatUser({
                     _id: data.ownerId,
                     username: data.ownerName,
-                    name: data.ownerName
+                    name: data.ownerName,
+                    taskId: data.taskId
                 });
             }, 800);
         });
@@ -244,19 +245,25 @@ function Resonance() {
     };
 
     const handleApprove = async (taskId, requesterId, requesterName) => {
+        console.log("📝 handleApprove called:", { taskId, requesterId, requesterName });
         try {
             if (String(requesterId) === String(user._id || user.id)) {
-                showToast("⚠️ Neural Interface Error: Cannot link with self", "error");
+                showToast("⚠️ Cannot connect with yourself", "error");
                 return;
             }
+            console.log("🚀 Calling approveConnection API...");
             await approveConnection(taskId, requesterId);
+            console.log("✅ API call successful, refreshing data...");
             loadMyRequests();
             loadMyTasks();
-            showToast(`✅ Neural Link: ${requesterName} Active`, "success");
+            showToast(`✅ Connected with ${requesterName}!`, "success");
 
             // Instant Connect: I approved THEM
-            setActiveChatUser({ _id: requesterId, username: requesterName, name: requesterName });
-        } catch (err) { showToast(err.message, "error"); }
+            setActiveChatUser({ _id: requesterId, username: requesterName, name: requesterName, taskId });
+        } catch (err) {
+            console.error("❌ handleApprove error:", err);
+            showToast(err.message || "Failed to accept request", "error");
+        }
     };
 
     const handleReject = async (taskId, requesterId) => {
@@ -292,16 +299,15 @@ function Resonance() {
                         <div className="flex items-center gap-3 mb-2">
                             <Activity size={16} className="text-cyan-400 animate-pulse" />
                             <span className="text-[10px] font-mono tracking-[0.3em] text-cyan-500/70 uppercase">
-                                Neural Network /// Active
+                                OPTICAM NETWORK /// ACTIVE
                             </span>
                         </div>
                         <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-white leading-none">
                             RESONANCE
-                            <span className="text-transparent bg-clip-text bg-gradient-to-tr from-cyan-400 to-blue-600 animate-gradient-x">.</span>
                         </h1>
                         <p className="text-gray-400 mt-4 font-mono text-sm max-w-md border-l border-white/10 pl-4 py-1">
-                            High-Fidelity Collaboration Protocol. <br />
-                            <span className="text-cyan-500">Scan</span> for signals. <span className="text-blue-500">Establish</span> links.
+                            Connect with peers. <br />
+                            <span className="text-cyan-500">Collaborate</span> on projects. <span className="text-blue-500">Achieve</span> together.
                         </p>
                     </div>
 
@@ -349,7 +355,7 @@ function Resonance() {
                                     ? 'bg-white text-black shadow-lg shadow-white/10 scale-105'
                                     : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                             >
-                                All Frequencies
+                                All Categories
                             </button>
                             {CATEGORIES.map(cat => (
                                 <button
@@ -385,7 +391,7 @@ function Resonance() {
                                 }
                             } catch (e) { showToast(e.message, "error"); }
                         }}
-                        onOpenChat={(id, name) => setActiveChatUser({ _id: id, username: name, name })}
+                        onOpenChat={(id, name) => setActiveChatUser({ _id: id, username: name, name, taskId: tasks.find(t => t.activeConnections.includes(id))?._id })}
                     />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
@@ -397,6 +403,8 @@ function Resonance() {
                                 task={task}
                                 currentUserId={user?._id || user?.id}
                                 onConnect={handleConnect}
+                                onApprove={handleApprove}
+                                onReject={handleReject}
                                 onDelete={async (id) => {
                                     if (window.confirm("Confirm deletion of this signal?")) {
                                         try {
@@ -409,6 +417,7 @@ function Resonance() {
                                         } catch (e) { showToast(e.message, "error"); }
                                     }
                                 }}
+                                onOpenChat={(id, name) => setActiveChatUser({ _id: id, username: name, name })}
                                 idx={idx}
                             />
                         ))}
@@ -427,8 +436,19 @@ function Resonance() {
                 <WarRoom
                     user={activeChatUser}
                     currentUser={user}
+                    taskId={activeChatUser.taskId}
                     socket={socket}
                     onClose={() => setActiveChatUser(null)}
+                    onEndConnection={async (taskId, targetId) => {
+                        try {
+                            await endConnection(taskId, targetId);
+                            showToast("Link Terminated & Frequency Cleared", "info");
+                            loadMyTasks(); // Refresh to update UI
+                            loadTasks();
+                        } catch (err) {
+                            showToast("Failed to sever link", "error");
+                        }
+                    }}
                 />
             )}
         </div>
@@ -437,42 +457,56 @@ function Resonance() {
 
 // --- CREATIVE "OSM" COMPONENTS ---
 
-function HoloCard({ task, currentUserId, onConnect, onDelete, idx }) {
+function HoloCard({ task, currentUserId, onConnect, onDelete, onApprove, onReject, onOpenChat, idx }) {
     const isOwner = String(task.ownerId) === String(currentUserId);
     const category = CATEGORIES.find(c => c.value === task.category) || CATEGORIES[3];
     const isPending = task.connectionRequests?.some(r => String(r.userId) === String(currentUserId) && r.status === 'pending');
     const isConnected = task.activeConnections?.some(id => String(id) === String(currentUserId));
 
+    // Check if there are incoming requests (for task owner)
+    const incomingRequests = isOwner ? task.connectionRequests?.filter(r => r.status === 'pending') || [] : [];
+    const hasIncomingRequests = incomingRequests.length > 0;
+
     return (
-        <div
-            className="group relative h-[400px] bg-[#0c0c0c] rounded-[30px] border border-white/5 overflow-hidden transition-all duration-500 hover:border-white/10 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.7)] hover:-translate-y-1"
-        >
-            {/* Ambient Background Glow based on Category */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-[0.05] transition-opacity duration-500`} />
+        <div className="group relative w-full h-full min-h-[320px] bg-[#0c0c0c] rounded-[30px] border border-white/5 hover:border-cyan-500/30 transition-all duration-500 overflow-hidden flex flex-col">
 
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay" />
+            {/* Hover Gradient Effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-            <div className="p-8 h-full flex flex-col relative z-10">
-                {/* Header Metadata */}
+            <div className="relative z-10 p-8 flex flex-col h-full">
+                {/* Header */}
                 <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-2">
-                        <div className={`p-2.5 rounded-xl bg-white/5 border border-white/5 ${category.accent} backdrop-blur-md`}>
-                            <category.icon size={18} />
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2.5 rounded-xl bg-${task.category === 'Cerebral Sync' ? 'cyan' : task.category === 'Fusion Core' ? 'violet' : task.category === 'Skill Matrix' ? 'amber' : 'emerald'}-500/10 text-${task.category === 'Cerebral Sync' ? 'cyan' : task.category === 'Fusion Core' ? 'violet' : task.category === 'Skill Matrix' ? 'amber' : 'emerald'}-500`}>
+                            {CATEGORIES.find(c => c.value === task.category)?.icon && React.createElement(CATEGORIES.find(c => c.value === task.category).icon, { size: 18 })}
                         </div>
-                        <div className="flex flex-col">
-                            <span className={`text-[9px] font-black uppercase tracking-widest ${category.accent}`}>
-                                {category.value}
-                            </span>
-                            <span className="text-[9px] text-gray-600 font-mono tracking-wider">
-                                NETWORK ID: {task._id.slice(-4).toUpperCase()}
-                            </span>
-                        </div>
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-gray-500 bg-white/5 px-2 py-1 rounded">
+                            {task.category}
+                        </span>
+                    </div>
+
+                    <div className="relative">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_emerald] animate-pulse" />
+
+                        {/* Delete Button for Owner */}
+                        {isOwner && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete(task._id);
+                                }}
+                                className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 w-8 h-8 rounded-full flex items-center justify-center hover:rotate-90"
+                                title="Purge Signal"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        )}
                     </div>
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1">
-                    <h3 className="text-2xl font-black text-white mb-4 leading-[1.1] group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 transition-all line-clamp-2">
+                <div className="flex-1 mb-6">
+                    <h3 className="text-2xl font-black text-white mb-3 leading-tight group-hover:text-cyan-400 transition-colors line-clamp-2">
                         {task.title}
                     </h3>
                     <p className="text-sm text-gray-400 leading-relaxed line-clamp-3 font-medium">
@@ -491,53 +525,79 @@ function HoloCard({ task, currentUserId, onConnect, onDelete, idx }) {
                     )}
                 </div>
 
-                {/* Footer / Connect Action */}
-                <div className="mt-6 pt-6 border-t border-white/5 flex items-center justify-between">
-                    {/* Owner Info */}
-                    <div className="flex items-center gap-3 group/owner cursor-default">
-                        <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-black p-[2px] ring-1 ring-white/10 group-hover/owner:ring-${category.color.split(' ')[1].replace('to-', '')} transition-all`}>
-                            <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
-                                <span className="text-xs font-bold text-gray-400 group-hover/owner:text-white transition-colors">
-                                    {task.ownerName?.[0]}
-                                </span>
-                            </div>
+                {/* Footer - Connection Logic */}
+                <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between gap-4 relative z-20">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                            {task.ownerName?.[0]}
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-xs font-bold text-white tracking-wide group-hover/owner:text-cyan-400 transition-colors">{task.ownerName}</span>
-                            <span className="text-[9px] text-gray-600 font-mono uppercase">Signal Source</span>
+                        <div className="flex flex-col truncate">
+                            <span className="text-xs font-bold text-gray-300 truncate max-w-[100px]">{task.ownerName}</span>
+                            <span className="text-[8px] text-gray-600 font-mono uppercase tracking-wider">SIGNAL SOURCE</span>
                         </div>
                     </div>
 
-                    {/* Action Button */}
-                    {!isOwner ? (
+                    {isOwner ? (
+                        hasIncomingRequests ? (
+                            <div className="flex items-center gap-2 shrink-0">
+                                <div className="px-2 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 font-mono flex items-center gap-1">
+                                    <UserPlus size={10} />
+                                    {incomingRequests.length} Request{incomingRequests.length > 1 ? 's' : ''}
+                                </div>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const firstRequest = incomingRequests[0];
+                                        onApprove(task._id, firstRequest.userId, firstRequest.userName);
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-[10px] font-bold hover:shadow-lg hover:shadow-cyan-500/20 transition-all hover:scale-105"
+                                    title="Accept Request"
+                                >
+                                    ✓ Accept
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const firstRequest = incomingRequests[0];
+                                        onReject(task._id, firstRequest.userId);
+                                    }}
+                                    className="p-1.5 rounded-lg bg-white/5 hover:bg-red-500/10 text-gray-400 hover:text-red-400 border border-white/5 hover:border-red-500/30 transition-all"
+                                    title="Reject Request"
+                                >
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] text-gray-400 font-mono shrink-0">
+                                OWNER
+                            </div>
+                        )
+                    ) : isConnected ? (
                         <button
-                            onClick={() => {
-                                if (!isPending && !isConnected) onConnect(task._id);
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent card click
+                                onOpenChat(task.ownerId, task.ownerName);
                             }}
-                            disabled={isPending || isConnected}
-                            className={`
-                                relative overflow-hidden h-10 pl-4 pr-10 rounded-full text-[10px] font-black uppercase tracking-widest transition-all
-                                ${isPending
-                                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 cursor-wait'
-                                    : isConnected
-                                        ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default'
-                                        : 'bg-white text-black hover:scale-105 shadow-lg shadow-white/20 hover:shadow-cyan-500/50'
-                                }
-                            `}
+                            className="w-10 h-10 rounded-full bg-emerald-500 text-black flex items-center justify-center hover:scale-110 hover:shadow-[0_0_20px_emerald] transition-all shrink-0"
+                            title="Open Channel"
                         >
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2">
-                                {isConnected ? 'LINKED' : isPending ? 'WAITING' : 'CONNECT'}
-                            </span>
-                            <span className={`absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center ${isConnected ? 'bg-emerald-500 text-black' : isPending ? 'bg-amber-500 text-black' : 'bg-black text-white'}`}>
-                                {isConnected ? <CheckCircle2 size={12} /> : isPending ? <Clock size={12} /> : <ArrowRight size={12} />}
-                            </span>
+                            <MessageSquare size={18} fill="currentColor" />
                         </button>
+                    ) : isPending ? (
+                        <div className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-500 font-mono shrink-0 flex items-center gap-1">
+                            <Clock size={10} />
+                            PENDING
+                        </div>
                     ) : (
                         <button
-                            onClick={() => onDelete(task._id)}
-                            className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:rotate-12"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onConnect(task._id);
+                            }}
+                            className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 hover:rotate-90 transition-all shrink-0 z-20 shadow-lg group-hover:bg-cyan-400"
+                            title="Connect"
                         >
-                            <Trash2 size={16} />
+                            <ArrowRight size={18} strokeWidth={3} />
                         </button>
                     )}
                 </div>
@@ -592,7 +652,7 @@ function CreateModal({ onClose, onSubmit }) {
                         <div>
                             <label className="text-[10px] font-mono uppercase tracking-widest text-cyan-500 mb-3 block flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
-                                Frequency Channel
+                                Category
                             </label>
                             <div className="relative group/select">
                                 <select
@@ -610,7 +670,7 @@ function CreateModal({ onClose, onSubmit }) {
                         <div>
                             <label className="text-[10px] font-mono uppercase tracking-widest text-cyan-500 mb-3 block flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
-                                Metadata Tags
+                                Tags
                             </label>
                             <input
                                 value={form.tags}
@@ -730,7 +790,10 @@ function MyTasksDashboard({ tasks, requests, onClose, onApprove, onOpenChat, onD
                                                 {task.activeConnections?.map((conn, i) => (
                                                     <div
                                                         key={i}
-                                                        onClick={() => onOpenChat(conn.userId, conn.userName)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onOpenChat(conn.userId, conn.userName);
+                                                        }}
                                                         className="w-12 h-12 rounded-full bg-black border border-white/10 flex items-center justify-center text-sm font-bold text-white cursor-pointer hover:scale-110 hover:border-emerald-500 transition-all relative z-10 shadow-lg group/avatar"
                                                         title={`Chat with ${conn.userName}`}
                                                     >

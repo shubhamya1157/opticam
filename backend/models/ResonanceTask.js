@@ -25,7 +25,7 @@ const ResonanceTaskSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ["Study Help", "Project Collaboration", "Skill Exchange", "Other"]
+        enum: ["Study Help", "Project Collaboration", "Skill Exchange", "General", "Other", "Cerebral Sync", "Fusion Core", "Skill Matrix", "Void Signals"]
     },
     tags: [{
         type: String,

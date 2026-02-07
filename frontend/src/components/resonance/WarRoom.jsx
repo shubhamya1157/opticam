@@ -6,12 +6,13 @@ import {
 } from "lucide-react";
 import api from "../../services/api";
 
-export default function WarRoom({ user, currentUser, socket, onClose }) {
+export default function WarRoom({ user, currentUser, socket, onClose, taskId, onEndConnection }) {
     const [input, setInput] = useState("");
     const [msgs, setMsgs] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
     const [isMaximized, setIsMaximized] = useState(false);
     const [showAttachMenu, setShowAttachMenu] = useState(false);
+    const [showEndConfirm, setShowEndConfirm] = useState(false);
     const endRef = useRef(null);
     const typingTimeoutRef = useRef(null);
 
@@ -50,14 +51,23 @@ export default function WarRoom({ user, currentUser, socket, onClose }) {
             }
         };
 
+        const termHandler = (data) => {
+            if (data.taskId === taskId) {
+                alert("Connection Terminated by Partner");
+                onClose();
+            }
+        };
+
         socket.on("receive_private_message", msgHandler);
         socket.on("user_typing", typingHandler);
+        socket.on("connection_terminated", termHandler);
 
         return () => {
             socket.off("receive_private_message", msgHandler);
             socket.off("user_typing", typingHandler);
+            socket.off("connection_terminated", termHandler);
         };
-    }, [socket, user, currentUser]);
+    }, [socket, user, currentUser, taskId]);
 
     const scrollToBottom = (smooth = true) => {
         setTimeout(() => endRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" }), 100);
@@ -78,8 +88,13 @@ export default function WarRoom({ user, currentUser, socket, onClose }) {
         if (socket) socket.emit("typing", { recipientId: user._id });
     };
 
+    const handleEndConnection = () => {
+        onEndConnection(taskId, user._id);
+        onClose();
+    };
+
     return (
-        <div className={`fixed inset-0 z-[200] flex items-center justify-center p-4 transition-all duration-300 ${isMaximized ? 'bg-black' : 'bg-black/60 backdrop-blur-md'}`}>
+        <div className={`fixed top-0 bottom-0 right-0 left-0 md:left-[300px] z-[200] flex items-center justify-center p-4 transition-all duration-300 ${isMaximized ? 'bg-black' : 'bg-black/60 backdrop-blur-md'}`}>
             <div
                 className={`
                     relative bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/10 shadow-2xl flex overflow-hidden transition-all duration-500
@@ -128,7 +143,7 @@ export default function WarRoom({ user, currentUser, socket, onClose }) {
                                 <Cpu size={12} /> System Resources
                             </h3>
                             <div className="space-y-3">
-                                <ResourceItem label="Shared Tasks" value="3 Active" />
+                                <ResourceItem label="Task ID" value={taskId ? taskId.slice(-6).toUpperCase() : 'N/A'} />
                                 <ResourceItem label="Latency" value="12ms" />
                                 <ResourceItem label="Encryption" value="AES-256" />
                             </div>
@@ -141,6 +156,16 @@ export default function WarRoom({ user, currentUser, socket, onClose }) {
                             <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center hover:bg-white/10 transition-colors cursor-pointer border-dashed">
                                 <p className="text-xs text-gray-400">Drag files to upload</p>
                             </div>
+                        </div>
+
+                        <div className="mt-auto pt-6 border-t border-white/5">
+                            <button
+                                onClick={() => setShowEndConfirm(true)}
+                                className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-xl flex items-center justify-center gap-2 transition-all group"
+                            >
+                                <X size={16} />
+                                <span className="text-xs font-bold uppercase tracking-widest">Terminate Link</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -168,17 +193,25 @@ export default function WarRoom({ user, currentUser, socket, onClose }) {
                         </div>
 
                         <div className="flex items-center gap-2">
+                            <div className="md:hidden">
+                                <button
+                                    onClick={() => setShowEndConfirm(true)}
+                                    className="p-2.5 text-red-500 bg-red-500/10 rounded-xl"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
                             <button
                                 onClick={() => setIsMaximized(!isMaximized)}
-                                className="p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                                className="p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all hidden md:block"
                             >
                                 {isMaximized ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
                             </button>
                             <button
                                 onClick={onClose}
-                                className="p-2.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                                className="p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
                             >
-                                <X size={18} />
+                                <Minimize2 size={18} className="rotate-45" />
                             </button>
                         </div>
                     </div>
@@ -274,6 +307,32 @@ export default function WarRoom({ user, currentUser, socket, onClose }) {
                     </div>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            {showEndConfirm && (
+                <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+                    <div className="bg-[#0a0a0a] border border-red-500/30 rounded-2xl p-8 max-w-sm w-full shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+                        <h3 className="text-xl font-bold text-white mb-2">Terminate Signal?</h3>
+                        <p className="text-sm text-gray-400 mb-6">
+                            This will disconnect the user and <span className="text-red-400 font-bold">permanently delete</span> all chat history. This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowEndConfirm(false)}
+                                className="flex-1 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-gray-300 font-bold text-xs uppercase"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleEndConnection}
+                                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-xs uppercase shadow-lg shadow-red-500/20"
+                            >
+                                Terminate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

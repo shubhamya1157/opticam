@@ -115,6 +115,16 @@ export const rejectConnection = async (taskId, requesterId) => {
     }
 };
 
+// End connection and delete chat
+export const endConnection = async (taskId, targetUserId) => {
+    try {
+        const res = await api.post("/resonance/end-connection", { taskId, targetUserId });
+        return res.data;
+    } catch (err) {
+        throw new Error(err.response?.data?.message || "Failed to end connection");
+    }
+};
+
 // Get pending requests for user's tasks
 export const getMyRequests = async () => {
     try {

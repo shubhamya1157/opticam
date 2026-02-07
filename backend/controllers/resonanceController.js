@@ -1,4 +1,5 @@
 import ResonanceTask from "../models/ResonanceTask.js";
+import PrivateMessage from "../models/PrivateMessage.js";
 import { getIO } from "../socket.js";
 
 // Create a new task
@@ -290,6 +291,72 @@ export const getMyRequests = async (req, res) => {
         res.json({ success: true, data: requests });
     } catch (err) {
         console.error("❌ Get My Requests Error:", err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// End connection and delete chat history
+export const endConnection = async (req, res) => {
+    try {
+        const { taskId, targetUserId } = req.body;
+        const requesterId = req.user.id;
+
+        const task = await ResonanceTask.findById(taskId);
+
+        if (!task) {
+            return res.status(404).json({ success: false, message: "Task not found" });
+        }
+
+        let userToRemove = targetUserId;
+        const isOwner = task.ownerId.toString() === requesterId;
+
+        // Determine who is being disconnected
+        if (!isOwner && requesterId === targetUserId) {
+            userToRemove = requesterId;
+        } else if (!isOwner) {
+            // If I am the connected user, I am chatting with Owner. I am ending my link.
+            userToRemove = requesterId;
+        }
+
+        // Remove from active connections
+        task.activeConnections = task.activeConnections.filter(id => id.toString() !== userToRemove.toString());
+
+        // Remove from connection requests to prevent instant re-connect without request
+        task.connectionRequests = task.connectionRequests.filter(r => r.userId.toString() !== userToRemove.toString());
+
+        await task.save();
+
+        // DELETE CHAT HISTORY
+        await PrivateMessage.deleteMany({
+            $or: [
+                { sender: task.ownerId, recipient: userToRemove },
+                { sender: userToRemove, recipient: task.ownerId }
+            ]
+        });
+
+        // Notify both parties
+        const io = getIO();
+
+        // Notify the user being removed
+        io.to(`user_${userToRemove}`).emit("connection_terminated", {
+            taskId: task._id,
+            taskTitle: task.title,
+            terminatorId: requesterId
+        });
+
+        // Notify the owner (if it wasn't them)
+        if (userToRemove !== task.ownerId.toString()) {
+            io.to(`user_${task.ownerId}`).emit("connection_terminated", {
+                taskId: task._id,
+                taskTitle: task.title,
+                terminatorId: requesterId,
+                removedUserId: userToRemove
+            });
+        }
+
+        res.json({ success: true, message: "Connection terminated and chat history wiped." });
+    } catch (err) {
+        console.error("❌ End Connection Error:", err);
         res.status(500).json({ success: false, message: err.message });
     }
 };

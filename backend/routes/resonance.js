@@ -8,7 +8,8 @@ import {
     requestConnection,
     approveConnection,
     rejectConnection,
-    getMyRequests
+    getMyRequests,
+    endConnection
 } from "../controllers/resonanceController.js";
 import auth from "../middleware/auth.js";
 
@@ -25,6 +26,7 @@ router.patch("/task/:id/status", auth, updateTaskStatus);
 router.post("/request-connection", auth, requestConnection);
 router.post("/approve-connection", auth, approveConnection);
 router.post("/reject-connection", auth, rejectConnection);
+router.post("/end-connection", auth, endConnection);
 router.get("/my-requests", auth, getMyRequests);
 
 export default router;
