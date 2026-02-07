@@ -1,5 +1,5 @@
 import express from "express";
-import { sendMessage, getChatHistory } from "../controllers/chatController.js";
+import { sendMessage, getChatHistory, deleteConversation, sendConnectionRequest, acceptConnectionRequest, rejectConnectionRequest, getPendingRequests } from "../controllers/chatController.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
@@ -8,6 +8,10 @@ const router = express.Router();
 router.use(auth);
 
 router.post("/send", sendMessage);
-router.get("/history/:userId", getChatHistory);
+router.post("/delete", deleteConversation); // New route for ephemeral chat
+router.post("/request", sendConnectionRequest);
+router.post("/accept", acceptConnectionRequest);
+router.post("/reject", rejectConnectionRequest);
+router.get("/requests", getPendingRequests);
 
 export default router;

@@ -57,3 +57,116 @@ export const getChatHistory = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// End Chat & Delete History (Private & Ephemeral)
+export const deleteConversation = async (req, res) => {
+    try {
+        const { targetUserId } = req.body;
+        const myId = req.user.id;
+
+        await PrivateMessage.deleteMany({
+            $or: [
+                { sender: myId, recipient: targetUserId },
+                { sender: targetUserId, recipient: myId }
+            ]
+        });
+
+        console.log(`🗑️ Chat deleted between ${myId} and ${targetUserId}`);
+        res.json({ success: true, message: "Chat history wiped" });
+    } catch (err) {
+        console.error("❌ Delete Chat Error:", err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// 🟢 Connection Request Logic
+import User from "../models/Users.js";
+import Notification from "../models/Notification.js";
+
+export const sendConnectionRequest = async (req, res) => {
+    try {
+        const { targetUserId } = req.body;
+        const requesterId = req.user.id;
+        const requesterName = req.user.name;
+
+        // Add to target's pending list
+        await User.findByIdAndUpdate(targetUserId, {
+            $push: {
+                pendingConnectionRequests: {
+                    requesterId,
+                    username: requesterName,
+                    timestamp: new Date()
+                }
+            }
+        });
+
+        // 🔔 Create Global Notification
+        await Notification.create({
+            userId: targetUserId,
+            title: "New Connection Request",
+            message: `${requesterName} wants to connect on Resonance.`,
+            type: "info",
+            link: "/resonance" // Clicking it goes to Resonance
+        });
+
+        // Real-time notification via Socket
+        const io = getIO();
+        io.to(`user_${targetUserId}`).emit("incoming_request", {
+            _id: requesterId,
+            username: requesterName,
+            persistent: true
+        });
+
+        // Also emit a general "notification" event to update the bell icon
+        io.to(`user_${targetUserId}`).emit("new_notification");
+
+        res.json({ success: true, message: "Request sent" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+export const getPendingRequests = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).populate('pendingConnectionRequests.requesterId', 'name email');
+        res.json({ success: true, data: user.pendingConnectionRequests });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+export const acceptConnectionRequest = async (req, res) => {
+    try {
+        const { requesterId } = req.body;
+        const userId = req.user.id;
+
+        // Remove from pending
+        await User.findByIdAndUpdate(userId, {
+            $pull: { pendingConnectionRequests: { requesterId: requesterId } }
+        });
+
+        const io = getIO();
+        io.to(`user_${requesterId}`).emit("request_accepted", {
+            _id: userId,
+            username: req.user.name
+        });
+
+        res.json({ success: true, message: "Connected" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+export const rejectConnectionRequest = async (req, res) => {
+    try {
+        const { requesterId } = req.body;
+        const userId = req.user.id;
+
+        await User.findByIdAndUpdate(userId, {
+            $pull: { pendingConnectionRequests: { requesterId: requesterId } }
+        });
+
+        res.json({ success: true, message: "Request rejected" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

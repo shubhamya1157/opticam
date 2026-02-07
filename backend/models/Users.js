@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema({
     endTime: { type: String, required: true },   // Format "HH:mm"
     color: { type: String, default: "#3b82f6" },
     category: { type: String, enum: ['fixed', 'productive', 'rest', 'leisure'], default: 'fixed' }
+  }],
+  pendingConnectionRequests: [{
+    requesterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    username: String,
+    timestamp: { type: Date, default: Date.now }
   }]
 }, { timestamps: true });
 

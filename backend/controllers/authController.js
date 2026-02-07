@@ -136,11 +136,26 @@ export const verifyOtp = async (req, res) => {
             { expiresIn: "7d" }
         );
 
+        // Normalize user object for frontend consistency
+        const userResponse = {
+            id: user._id,
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            collegeId: user.collegeId,
+            role: user.role,
+            year: user.year,
+            semester: user.semester,
+            branch: user.branch,
+            section: user.section,
+            isVerified: user.isVerified
+        };
+
         res.json({
             success: true,
             message: "Login successful",
             token,
-            user
+            user: userResponse
         });
 
     } catch (err) {
@@ -159,7 +174,24 @@ export const verifyToken = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("-password");
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
-        res.json({ success: true, user });
+
+        // Normalize user object for frontend consistency
+        const userResponse = {
+            id: user._id,
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            collegeId: user.collegeId,
+            role: user.role,
+            year: user.year,
+            semester: user.semester,
+            branch: user.branch,
+            section: user.section,
+            isVerified: user.isVerified,
+            xp: user.xp
+        };
+
+        res.json({ success: true, user: userResponse });
     } catch (err) {
         res.status(500).json({ success: false, message: "Server error" });
     }
