@@ -13,6 +13,12 @@ export const initSocket = (server) => {
     io.on("connection", (socket) => {
         console.log("🔌 New client connected:", socket.id);
 
+        // User joins their own private room for 1-on-1 chats
+        socket.on("join_user_room", (userId) => {
+            socket.join(`user_${userId}`);
+            console.log(`👤 User joined private room: user_${userId}`);
+        });
+
         socket.on("join_group", (groupId) => {
             socket.join(groupId);
             console.log(`👤 User ${socket.id} joined group: ${groupId}`);

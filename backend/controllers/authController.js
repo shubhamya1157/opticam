@@ -1,6 +1,7 @@
 import Otp from "../models/Otp.js";
 import User from "../models/Users.js";
 import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
 
 /**
  * Send OTP
@@ -129,9 +130,16 @@ export const verifyOtp = async (req, res) => {
 
         await Otp.deleteMany({ email });
 
+        const token = jwt.sign(
+            { id: user._id, name: user.name, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
         res.json({
             success: true,
             message: "Login successful",
+            token,
             user
         });
 
@@ -141,6 +149,19 @@ export const verifyOtp = async (req, res) => {
             success: false,
             message: "OTP verification failed"
         });
+    }
+};
+
+/**
+ * Verify Token (Frontend Check)
+ */
+export const verifyToken = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("-password");
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        res.json({ success: true, user });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Server error" });
     }
 };
 

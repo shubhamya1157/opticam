@@ -12,7 +12,9 @@ import taskRoutes from "./routes/tasks.js";
 import noteRoutes from "./routes/notes.js";
 import notificationRoutes from "./routes/notifications.js";
 import communityRoutes from "./routes/community.js";
-import deadlineRoutes from "./routes/deadlines.js"; // 🟢
+import deadlineRoutes from "./routes/deadlines.js";
+import resonanceRoutes from "./routes/resonance.js";
+import chatRoutes from "./routes/chat.js";
 
 
 
@@ -27,7 +29,13 @@ initSocket(httpServer);
 
 // 1. Logger first to see everything
 app.use((req, res, next) => {
-  console.log(`📥 Request received: ${req.method} ${req.url}`);
+  console.log(`📥 ${req.method} ${req.url}`);
+
+  // Capture response finish to log status
+  res.on('finish', () => {
+    console.log(`xB4 ${req.method} ${req.url} -> ${res.statusCode}`);
+  });
+
   next();
 });
 
@@ -43,6 +51,8 @@ app.use("/api/classes", classRoutes);
 app.use("/api/notes", noteRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/community", communityRoutes);
+app.use("/api/resonance", resonanceRoutes);
+app.use("/api/chat", chatRoutes);
 app.use("/api/deadlines", deadlineRoutes);
 
 connectDB();
