@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import {
     Trophy, Timer, Zap, Target, TrendingUp, CheckCircle2,
-    Award, BarChart3, CalendarDays
+    Award, BarChart3, CalendarDays, Users, GraduationCap
 } from "lucide-react";
 import { fetchTasks } from "../services/taskService";
 
@@ -74,16 +74,16 @@ export default function Achievements() {
                     trend="Quality hours"
                 />
                 <StatCard
-                    title="Current Streak"
-                    value={`${stats.currentStreak} Days`}
-                    icon={<Zap className="text-yellow-500" />}
-                    trend="Keep it going!"
+                    title="Resonance Connections"
+                    value={stats.resonanceConnections || 0}
+                    icon={<Users className="text-cyan-500" />}
+                    trend="Active collaborations"
                 />
                 <StatCard
-                    title="XP Gained"
-                    value={user.xp}
-                    icon={<Trophy className="text-purple-500" />}
-                    trend={`Next Lvl: ${user.level * 1000}`}
+                    title="Classes Attended"
+                    value={stats.classesAttended || 0}
+                    icon={<GraduationCap className="text-indigo-500" />}
+                    trend="This semester"
                 />
             </div>
 

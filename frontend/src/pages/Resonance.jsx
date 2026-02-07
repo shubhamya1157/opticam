@@ -5,7 +5,7 @@ import {
     MessageSquare, Check, X, Loader2, Send, Trash2, Bell, Filter,
     ArrowRight, Zap, MessageCircle, CheckCircle2, MoreHorizontal,
     LayoutGrid, List, Layers, Phone, Video, Cpu, Activity, Globe,
-    Radio, Hexagon
+    Radio, Hexagon, UserPlus
 } from "lucide-react";
 import { getTasks, createTask, requestConnection, getMyTasks, getMyRequests, approveConnection, rejectConnection, deleteTask, getCachedTasks, getCachedMyTasks, endConnection } from "../services/resonanceService";
 import { io } from "socket.io-client";
@@ -291,9 +291,9 @@ function Resonance() {
             <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[150px] animate-pulse delay-1000 -z-10" />
             <div className="fixed top-[20%] right-[30%] w-[20%] h-[20%] bg-cyan-500/10 rounded-full blur-[100px] animate-blob -z-10" />
 
-            <div className="relative z-10 max-w-[1920px] mx-auto p-6 lg:p-12">
+            <div className="relative z-0 max-w-[1920px] mx-auto p-6 lg:p-12">
                 {/* Header */}
-                <header className="flex flex-col xl:flex-row justify-between items-end mb-16 gap-8 xl:gap-0">
+                <header className="flex flex-col xl:flex-row justify-between items-end mb-16 gap-8 xl:gap-0 relative z-0">
                     <div className="relative group">
                         <div className="absolute -left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         <div className="flex items-center gap-3 mb-2">
@@ -331,16 +331,16 @@ function Resonance() {
                     <div className="bg-[#0a0a0a]/60 backdrop-blur-2xl border border-white/10 rounded-full p-2 flex flex-col md:flex-row items-center gap-2 shadow-[0_0_50px_rgba(0,0,0,0.5)] max-w-5xl mx-auto ring-1 ring-white/5">
 
                         {/* Search Input */}
-                        <div className="relative flex-1 w-full md:w-auto group">
+                        <div className="relative flex-1 w-full md:w-auto group min-w-0">
                             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                                 <Search className="text-gray-500 group-focus-within:text-cyan-400 transition-colors" size={18} />
                             </div>
                             <input
                                 type="text"
-                                placeholder="INITIALIZE SCAN..."
+                                placeholder="Search signals..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-transparent border-none py-3 pl-12 pr-6 text-sm text-white focus:ring-0 placeholder-gray-600 font-mono tracking-wide"
+                                className="w-full bg-transparent border-none py-3 pl-12 pr-20 text-sm text-white focus:ring-0 placeholder-gray-600 font-mono tracking-wide"
                             />
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-700 font-mono hidden md:block border border-white/10 px-1.5 py-0.5 rounded">CMD+K</div>
                         </div>
