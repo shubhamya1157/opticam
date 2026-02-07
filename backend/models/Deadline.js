@@ -8,7 +8,7 @@ const DeadlineSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['assignment', 'quiz', 'exam', 'project', 'lab', 'presentation', 'personal'],
+        enum: ['assignment', 'quiz', 'exam', 'project', 'lab', 'presentation', 'personal', 'holiday', 'fest', 'college', 'other'],
         required: true
     },
     deadline: {
