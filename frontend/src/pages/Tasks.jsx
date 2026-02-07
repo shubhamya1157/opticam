@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useOutletContext, useNavigate } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import {
     Plus,
     Clock,
@@ -29,7 +29,6 @@ const priorityConfig = {
 };
 
 export default function Tasks() {
-    const navigate = useNavigate();
     const { user, handleUpdateUser } = useOutletContext();
 
     const [tasks, setTasks] = useState([]);
@@ -44,6 +43,21 @@ export default function Tasks() {
     const [hours, setHours] = useState(1);
     const [minutes, setMinutes] = useState(0);
     const [note, setNote] = useState("");
+    const [quote, setQuote] = useState("");
+
+    const quotes = [
+        "We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
+        "Discipline is the bridge between goals and accomplishment.",
+        "The only way to do great work is to love what you do.",
+        "Focus on being productive instead of busy.",
+        "Simplicity is the ultimate sophistication.",
+        "What you do today can improve all your tomorrows.",
+        "Don't watch the clock; do what it does. Keep going."
+    ];
+
+    useEffect(() => {
+        setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+    }, []);
 
     useEffect(() => {
         if (user?._id) {
@@ -134,10 +148,15 @@ export default function Tasks() {
                             <h1 className="text-4xl font-black text-white tracking-tight mb-2">
                                 Ready for Impact?
                             </h1>
-                            <p className="text-gray-400 max-w-md text-sm leading-relaxed">
-                                You have <span className="text-white font-bold">{tasks.length} active missions</span> across all frequencies.
-                                Stay focused and clear your objectives.
-                            </p>
+                            <div className="max-w-md">
+                                <p className="text-gray-400 text-sm leading-relaxed italic font-serif opacity-80">
+                                    "{quote}"
+                                </p>
+                                <div className="mt-2 flex items-center gap-2">
+                                    <div className="h-px w-8 bg-blue-500/30"></div>
+                                    <span className="text-[10px] uppercase tracking-widest text-blue-400 font-bold opacity-60">Daily Wisdom</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

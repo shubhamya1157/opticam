@@ -12,12 +12,6 @@ export default function Notifications() {
     const [notifications, setNotifications] = useState([]);
     const [activeTab, setActiveTab] = useState("all"); // 'all', 'unread'
 
-    useEffect(() => {
-        if (user._id) {
-            loadNotifications();
-        }
-    }, [user]);
-
     const loadNotifications = async () => {
         try {
             const res = await fetchNotifications(user._id);
@@ -27,11 +21,12 @@ export default function Notifications() {
         }
     };
 
-    const handleMarkRead = async (id, e) => {
-        e.stopPropagation();
-        await markNotificationRead(id);
-        setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
-    };
+    useEffect(() => {
+        if (user._id) {
+            loadNotifications();
+        }
+    }, [user]);
+
 
     const handleMarkAllRead = async () => {
         await markAllNotificationsRead(user._id);

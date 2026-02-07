@@ -5,7 +5,7 @@ import {
     Users, Send, Plus, MessageSquare, MoreVertical, Paperclip, Smile,
     Image as ImageIcon, Search, Phone, Video, Mic, X, ChevronLeft,
     Menu, Trash2, Edit2, Info, User, LogOut, Check, CheckCheck, Clock, File,
-    ArrowLeft, StopCircle, Play, Pause
+    ArrowLeft, StopCircle, Play, Pause, FileText
 } from "lucide-react";
 import { fetchGroups, createGroup, updateGroup, deleteGroup, fetchMessages, sendMessage, uploadFile, deleteMessage, clearChat } from "../services/communityService";
 
@@ -606,12 +606,36 @@ export default function Community() {
                                                 </div>
                                             )}
                                             {msg.type === 'file' && msg.fileUrl && (
-                                                <div className="mb-2 bg-black/20 p-3 rounded-lg flex items-center gap-3 mt-1 border border-white/5 hover:bg-black/30 transition">
-                                                    <div className="bg-[#2f3336] p-2 rounded-md"><File size={24} className="text-blue-400" /></div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <a href={msg.fileUrl} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-300 hover:underline truncate block">{msg.content || 'Attached File'}</a>
-                                                        <span className="text-[10px] text-gray-400 uppercase tracking-wider">Document</span>
+                                                <div className="mb-2 bg-[#2f3336]/50 p-3 rounded-xl flex items-center gap-4 mt-1 border border-white/5 hover:bg-[#2f3336] transition-all group/file relative overflow-hidden">
+                                                    {/* Premium Icon Container */}
+                                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${msg.content?.toLowerCase().endsWith('.pdf')
+                                                        ? 'bg-red-500/20 text-red-500 ring-1 ring-red-500/30'
+                                                        : 'bg-blue-500/20 text-blue-500 ring-1 ring-blue-500/30'
+                                                        }`}>
+                                                        {msg.content?.toLowerCase().endsWith('.pdf') ? (
+                                                            <FileText size={24} />
+                                                        ) : (
+                                                            <File size={24} />
+                                                        )}
                                                     </div>
+
+                                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                        <a href={msg.fileUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-gray-200 hover:text-white truncate block leading-tight mb-0.5 z-10 relative">
+                                                            {msg.content || 'Attached File'}
+                                                        </a>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`text-[10px] font-bold uppercase tracking-wider ${msg.content?.toLowerCase().endsWith('.pdf') ? 'text-red-400' : 'text-blue-400'
+                                                                }`}>
+                                                                {msg.content?.split('.').pop()?.toUpperCase() || 'FILE'}
+                                                            </span>
+                                                            <span className="text-[10px] text-gray-500">•</span>
+                                                            <span className="text-[10px] text-gray-500 font-medium hover:text-gray-300 cursor-pointer">Download</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Background Glow */}
+                                                    <div className={`absolute -right-6 -bottom-6 w-20 h-20 rounded-full blur-2xl opacity-20 pointer-events-none ${msg.content?.toLowerCase().endsWith('.pdf') ? 'bg-red-500' : 'bg-blue-500'
+                                                        }`}></div>
                                                 </div>
                                             )}
                                             {msg.type === 'video' && msg.fileUrl && (
@@ -685,7 +709,7 @@ export default function Community() {
                                     <button className="p-2 text-gray-400 hover:text-white transition rounded-full hover:bg-[#2f3336]" onClick={handleFileUpload}>
                                         <Paperclip size={24} />
                                     </button>
-                                    <input type="file" ref={fileInputRef} className="hidden" onChange={onFileChange} />
+                                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" onChange={onFileChange} />
 
                                     <div className="flex-1 bg-[#202c33] rounded-2xl flex items-center px-4 py-2 my-1 border border-transparent focus-within:border-[#2f3336] transition-colors">
                                         <input

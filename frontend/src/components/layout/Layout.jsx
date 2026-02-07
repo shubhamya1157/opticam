@@ -28,16 +28,7 @@ export default function Layout() {
         setUser(updatedUser);
     };
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(location.pathname === '/dashboard');
-
-    // Automatically manage sidebar state based on route
-    useEffect(() => {
-        if (location.pathname === '/dashboard') {
-            setIsSidebarOpen(true);
-        } else {
-            setIsSidebarOpen(false);
-        }
-    }, [location.pathname]);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);

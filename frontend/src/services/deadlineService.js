@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/deadlines";
+const API_URL = "/api/deadlines";
 
 // Get all deadlines
-export const fetchDeadlines = async () => {
-    return await axios.get(API_URL);
+export const fetchDeadlines = async (userId) => {
+    return await axios.get(API_URL, { params: { userId } });
 };
 
 // Create a new deadline (CR Only)
@@ -13,6 +13,6 @@ export const addDeadline = async (deadlineData) => {
 };
 
 // Delete a deadline (CR Only)
-export const deleteDeadline = async (id) => {
-    return await axios.delete(`${API_URL}/${id}`);
+export const deleteDeadline = async (id, userId) => {
+    return await axios.delete(`${API_URL}/${id}`, { data: { userId } });
 };

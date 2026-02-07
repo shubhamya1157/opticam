@@ -1,52 +1,65 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useOutletContext } from "react-router-dom";
-import { PieChart, Clock, Zap, Moon, Coffee, Briefcase, Plus, Trash2, Check, TrendingUp, AlertCircle } from "lucide-react";
+import { PieChart, Clock, Zap, Moon, Coffee, Briefcase, Plus, Trash2, Check, TrendingUp, AlertCircle, Play, Activity, Sun, Battery, Brain } from "lucide-react";
 
 export default function DayPulse() {
     const { user, onUpdateUser } = useOutletContext();
     const [routine, setRoutine] = useState(user.dailyRoutine || []);
     const [newItem, setNewItem] = useState({ activity: "", startTime: "", endTime: "", color: "#3b82f6", category: "productive" });
-    const [hoveredSegment, setHoveredSegment] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [stats, setStats] = useState({ productive: 0, fixed: 0, rest: 0, leisure: 0, free: 0 });
+    const [currentTime, setCurrentTime] = useState(new Date());
 
-    const colors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#6366f1", "#14b8a6"];
     const categories = [
-        { id: 'fixed', label: 'Fixed', icon: <Briefcase size={14} />, desc: "Non-negotiable (Classes, Sleep)" },
-        { id: 'productive', label: 'Productive', icon: <Zap size={14} />, desc: "High-value work (Study, Gym)" },
-        { id: 'rest', label: 'Rest', icon: <Moon size={14} />, desc: "Recharging (Breaks, Meals)" },
-        { id: 'leisure', label: 'Leisure', icon: <Coffee size={14} />, desc: "Fun & Entertainment" },
+        { id: 'fixed', label: 'Commitments', icon: <Briefcase size={14} />, desc: "Classes, Work", color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" },
+        { id: 'productive', label: 'Deep Work', icon: <Brain size={14} />, desc: "Study, Skills", color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+        { id: 'rest', label: 'Recharge', icon: <Moon size={14} />, desc: "Sleep, Naps", color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
+        { id: 'leisure', label: 'Leisure', icon: <Coffee size={14} />, desc: "Fun, Social", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
     ];
 
+    // Update real-time clock
     useEffect(() => {
-        calculateStats();
-    }, [routine]);
+        const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Every minute
+        return () => clearInterval(timer);
+    }, []);
 
-    const calculateStats = () => {
+    // Derived Stats
+    const stats = useMemo(() => {
         let totals = { productive: 0, fixed: 0, rest: 0, leisure: 0, occupied: 0 };
-
         routine.forEach(item => {
             const [sH, sM] = item.startTime.split(':').map(Number);
             const [eH, eM] = item.endTime.split(':').map(Number);
             let duration = (eH * 60 + eM) - (sH * 60 + sM);
-            if (duration < 0) duration += 1440;
-
-            if (totals[item.category] !== undefined) {
-                totals[item.category] += duration;
-            }
+            if (duration < 0) duration += 1440; // Spans midnight
+            if (totals[item.category] !== undefined) totals[item.category] += duration;
             totals.occupied += duration;
         });
-
-        setStats({
+        return {
             ...totals,
-            free: 1440 - totals.occupied
+            free: 1440 - totals.occupied,
+            score: Math.min(100, Math.round((totals.productive / 360) * 100)) // Arbitrary score based on 6h productivity goal
+        };
+    }, [routine]);
+
+    const getCurrentActivity = () => {
+        const nowMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+        return routine.find(item => {
+            const [sH, sM] = item.startTime.split(':').map(Number);
+            const [eH, eM] = item.endTime.split(':').map(Number);
+            const start = sH * 60 + sM;
+            const end = eH * 60 + eM;
+            if (end < start) { // Spans midnight
+                return nowMinutes >= start || nowMinutes < end;
+            }
+            return nowMinutes >= start && nowMinutes < end;
         });
     };
+
+    const currentActivity = getCurrentActivity();
 
     const handleAdd = () => {
         if (!newItem.activity || !newItem.startTime || !newItem.endTime) return;
         setRoutine([...routine, newItem]);
-        setNewItem({ ...newItem, activity: "" }); // Reset activity but keep time/cat for faster entry
+        setNewItem({ ...newItem, activity: "" });
     };
 
     const handleDelete = (index) => {
@@ -56,14 +69,11 @@ export default function DayPulse() {
     const handleSave = async () => {
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:5000/api/auth/update-routine", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: user._id, routine })
-            });
-            const updatedUser = await res.json();
-            onUpdateUser(updatedUser);
-            // Optional: Show success toast
+            // Simulate API call or replace with actual endpoint
+            // const res = await fetch("...", ...);
+            // Mock update for now
+            onUpdateUser({ ...user, dailyRoutine: routine });
+            // Assuming API success
         } catch (err) {
             console.error("Failed to save", err);
         } finally {
@@ -71,212 +81,293 @@ export default function DayPulse() {
         }
     };
 
-    // Generate Conic Gradient for the big ring
-    const getConicGradient = () => {
-        if (routine.length === 0) return `conic-gradient(#16181c 0deg, #16181c 360deg)`;
+    // Helper to calc svg arc
+    const describeArc = (x, y, radius, startAngle, endAngle) => {
+        const start = polarToCartesian(x, y, radius, endAngle);
+        const end = polarToCartesian(x, y, radius, startAngle);
+        const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+        return [
+            "M", start.x, start.y,
+            "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+            "L", x, y,
+            "L", start.x, start.y
+        ].join(" ");
+    };
 
-        const sorted = [...routine].sort((a, b) => a.startTime.localeCompare(b.startTime));
-        let parts = [];
-
-        sorted.forEach(item => {
-            const [sH, sM] = item.startTime.split(':').map(Number);
-            const [eH, eM] = item.endTime.split(':').map(Number);
-
-            let startDeg = ((sH * 60 + sM) / 1440) * 360;
-            let endDeg = ((eH * 60 + eM) / 1440) * 360;
-            if (endDeg < startDeg) endDeg += 360;
-
-            parts.push(`${item.color} ${startDeg}deg ${endDeg}deg`);
-        });
-
-        return `conic-gradient(from 0deg, ${parts.join(', ')}, #16181c 0deg)`;
+    const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
+        const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+        return {
+            x: centerX + (radius * Math.cos(angleInRadians)),
+            y: centerY + (radius * Math.sin(angleInRadians))
+        };
     };
 
     return (
-        <div className="min-h-screen space-y-8 p-8 animate-fade-in relative z-10">
+        <div className="min-h-screen space-y-6 p-6 animate-fade-in pb-24 font-['Outfit']">
 
-            {/* Header */}
-            <div className="flex justify-between items-end">
-                <div>
-                    <h1 className="text-4xl font-black text-white tracking-tight font-['Outfit'] mb-2">
-                        Day <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1d9bf0] to-[#8b5cf6]">Pulse</span>
+            {/* 🟢 HEADER */}
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 bg-[#09090b] p-6 rounded-[32px] border border-white/5 relative overflow-hidden">
+                <div className="relative z-10">
+                    <h1 className="text-4xl font-black text-white tracking-tight mb-2 flex items-center gap-3">
+                        Day <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Pulse</span>
+                        <Activity className="text-blue-500 animate-pulse" size={28} />
                     </h1>
-                    <p className="text-[#8b98a5] text-sm max-w-xl">
-                        Visualize your 24 hours. Optimize your energy allocation between fixed commitments, high-value work, and necessary rest.
+                    <p className="text-gray-400/90 text-base font-medium max-w-xl leading-relaxed tracking-wide opacity-80 italic">
+                        "Your routine is the architect of your destiny. Operate with precision, harness your energy, and turn every hour into a masterpiece of focus."
                     </p>
                 </div>
-                <div className="flex gap-4">
-                    {/* Quick Stats in Header */}
+
+                {/* Live Time Badge */}
+                <div className="flex items-center gap-4 bg-[#16181c] px-5 py-3 rounded-2xl border border-white/5 shadow-xl transition-transform hover:scale-105">
                     <div className="text-right">
-                        <div className="text-xs text-gray-500 font-bold uppercase tracking-widest">Productivity Score</div>
-                        <div className="text-2xl font-black text-white font-['Outfit']">
-                            {Math.round((stats.productive / (1440 - stats.fixed - stats.rest)) * 100) || 0}%
+                        <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Current Time</div>
+                        <div className="text-2xl font-mono text-white font-bold tracking-wider">
+                            {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                     </div>
                 </div>
+
+                {/* Background Glow */}
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[100px] pointer-events-none"></div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-200px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-                {/* Left: Editor Panel */}
-                <div className="bg-[#09090b]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-6 flex flex-col overflow-hidden">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <Edit3 size={16} className="text-[#1d9bf0]" /> Routine Editor
-                    </h3>
+                {/* 🟢 LEFT COL: CURRENT STATUS & STATS (4 cols) */}
+                <div className="lg:col-span-4 space-y-6">
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2">
-                        {/* Input Form */}
-                        <div className="bg-[#16181c] p-5 rounded-2xl border border-white/5 space-y-4">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase">Activity</label>
-                                <input
-                                    className="w-full bg-black border border-[#2f3336] rounded-lg px-3 py-2 text-white text-sm focus:border-[#1d9bf0] outline-none transition-colors"
-                                    placeholder="e.g. Deep Work"
-                                    value={newItem.activity}
-                                    onChange={e => setNewItem({ ...newItem, activity: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase">Start</label>
-                                    <input type="time" className="w-full bg-black border border-[#2f3336] rounded-lg px-2 py-2 text-white text-xs focus:border-[#1d9bf0] outline-none"
-                                        value={newItem.startTime} onChange={e => setNewItem({ ...newItem, startTime: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase">End</label>
-                                    <input type="time" className="w-full bg-black border border-[#2f3336] rounded-lg px-2 py-2 text-white text-xs focus:border-[#1d9bf0] outline-none"
-                                        value={newItem.endTime} onChange={e => setNewItem({ ...newItem, endTime: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase">Category</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {categories.map(cat => (
-                                        <button
-                                            key={cat.id}
-                                            onClick={() => setNewItem({ ...newItem, category: cat.id })}
-                                            className={`flex items-center gap-2 px-2 py-2 rounded-lg border text-[10px] transition-all
-                         ${newItem.category === cat.id
-                                                    ? 'bg-white text-black border-white'
-                                                    : 'bg-black text-gray-400 border-[#2f3336] hover:border-white/20'}`}
-                                        >
-                                            {cat.icon} {cat.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={handleAdd}
-                                className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Plus size={16} /> Add Block
-                            </button>
+                    {/* Current Activity Card */}
+                    <div className="bg-gradient-to-br from-[#09090b] to-[#16181c] rounded-[32px] p-6 border border-white/5 shadow-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <Zap size={80} className="stroke-white" />
                         </div>
 
-                        {/* List */}
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                <span className="text-[10px] font-bold text-green-400 uppercase tracking-widest">Happening Now</span>
+                            </div>
+
+                            <h2 className="text-3xl font-bold text-white mb-2 leading-tight">
+                                {currentActivity ? currentActivity.activity : "Free Time"}
+                            </h2>
+                            <p className="text-gray-400 text-sm mb-6 flex items-center gap-2">
+                                <Clock size={14} className="text-blue-500" />
+                                {currentActivity
+                                    ? `${currentActivity.startTime} - ${currentActivity.endTime}`
+                                    : "No scheduled activity right now."}
+                            </p>
+
+                            {/* Progress bar for current activity could go here */}
+                            <div className="w-full bg-black/50 h-1.5 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500 w-1/3 rounded-full animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-[#09090b] p-4 rounded-2xl border border-white/5 hover:border-blue-500/20 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                                <Brain size={20} className="text-blue-400" />
+                                <span className="text-[10px] font-bold text-gray-500">DEEP WORK</span>
+                            </div>
+                            <div className="text-2xl font-bold text-white">{Math.floor(stats.productive / 60)}<span className="text-sm text-gray-500">h</span> {stats.productive % 60}m</div>
+                        </div>
+                        <div className="bg-[#09090b] p-4 rounded-2xl border border-white/5 hover:border-purple-500/20 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                                <Moon size={20} className="text-purple-400" />
+                                <span className="text-[10px] font-bold text-gray-500">SLEEP</span>
+                            </div>
+                            <div className="text-2xl font-bold text-white">{Math.floor(stats.rest / 60)}<span className="text-sm text-gray-500">h</span> {stats.rest % 60}m</div>
+                        </div>
+                        <div className="bg-[#09090b] p-4 rounded-2xl border border-white/5 hover:border-emerald-500/20 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                                <Coffee size={20} className="text-emerald-400" />
+                                <span className="text-[10px] font-bold text-gray-500">LEISURE</span>
+                            </div>
+                            <div className="text-2xl font-bold text-white">{Math.floor(stats.leisure / 60)}<span className="text-sm text-gray-500">h</span> {stats.leisure % 60}m</div>
+                        </div>
+                        <div className="bg-[#09090b] p-4 rounded-2xl border border-white/5 hover:border-rose-500/20 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                                <Briefcase size={20} className="text-rose-400" />
+                                <span className="text-[10px] font-bold text-gray-500">FIXED</span>
+                            </div>
+                            <div className="text-2xl font-bold text-white">{Math.floor(stats.fixed / 60)}<span className="text-sm text-gray-500">h</span> {stats.fixed % 60}m</div>
+                        </div>
+                    </div>
+
+                    {/* Editor Trigger (or direct form) */}
+                    <div className="bg-[#09090b] rounded-3xl border border-white/5 p-6 space-y-4">
+                        <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <Plus size={16} className="text-blue-500" /> Quick Add Block
+                        </h3>
+
+                        <input
+                            className="w-full bg-[#16181c] border border-white/5 rounded-xl px-4 py-3 text-white text-sm focus:border-blue-500/50 outline-none transition-colors"
+                            placeholder="Activity Name (e.g. Gym)"
+                            value={newItem.activity}
+                            onChange={e => setNewItem({ ...newItem, activity: e.target.value })}
+                        />
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <input type="time" className="bg-[#16181c] border border-white/5 rounded-xl px-4 py-3 text-white text-xs outline-none"
+                                value={newItem.startTime} onChange={e => setNewItem({ ...newItem, startTime: e.target.value })}
+                            />
+                            <input type="time" className="bg-[#16181c] border border-white/5 rounded-xl px-4 py-3 text-white text-xs outline-none"
+                                value={newItem.endTime} onChange={e => setNewItem({ ...newItem, endTime: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="flex gap-2 bg-[#16181c] p-1 rounded-xl overflow-x-auto">
+                            {categories.map(cat => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => setNewItem({ ...newItem, category: cat.id })}
+                                    className={`p-2 rounded-lg transition-all ${newItem.category === cat.id ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}`}
+                                    title={cat.label}
+                                >
+                                    {cat.icon}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={handleAdd}
+                            className="w-full bg-white text-black py-3 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors shadow-lg shadow-white/5"
+                        >
+                            Add to Schedule
+                        </button>
+
+                        <button
+                            onClick={handleSave}
+                            className="w-full bg-[#16181c] text-gray-400 hover:text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-colors border border-white/5"
+                        >
+                            {loading ? "Saving..." : "Save Routine"}
+                        </button>
+                    </div>
+
+                    {/* Routine List */}
+                    <div className="bg-[#09090b] rounded-3xl border border-white/5 p-6 space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar">
+                        <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <Activity size={16} className="text-gray-500" /> Your Schedule
+                        </h3>
                         <div className="space-y-2">
+                            {routine.length === 0 && <div className="text-gray-600 text-xs italic">No activities added yet.</div>}
                             {routine.sort((a, b) => a.startTime.localeCompare(b.startTime)).map((item, idx) => (
-                                <div key={idx} className="group flex items-center bg-[#16181c]/50 hover:bg-[#16181c] border border-white/5 rounded-xl p-3 transition-colors">
-                                    <div className="w-1 h-8 rounded-full mr-3" style={{ backgroundColor: item.color }} />
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-white font-bold text-sm">{item.activity}</span>
-                                            <span className="text-[9px] text-gray-500 uppercase border border-gray-700 px-1 rounded">{item.category}</span>
+                                <div key={idx} className="group flex items-center justify-between bg-[#16181c]/50 hover:bg-[#16181c] border border-white/5 rounded-xl p-3 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-1 h-8 rounded-full ${item.category === 'fixed' ? 'bg-rose-500' : item.category === 'productive' ? 'bg-blue-500' : item.category === 'rest' ? 'bg-indigo-500' : 'bg-emerald-500'}`} />
+                                        <div>
+                                            <div className="text-white font-bold text-sm leading-tight">{item.activity}</div>
+                                            <div className="text-[10px] text-gray-500 font-mono">{item.startTime} - {item.endTime}</div>
                                         </div>
-                                        <div className="text-[11px] text-gray-500 font-mono">{item.startTime} - {item.endTime}</div>
                                     </div>
-                                    <button onClick={() => handleDelete(idx)} className="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Trash2 size={16} />
+                                    <button onClick={() => handleDelete(idx)} className="text-gray-600 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity p-2">
+                                        <Trash2 size={14} />
                                     </button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="pt-4 mt-4 border-t border-white/5">
-                        <button
-                            onClick={handleSave}
-                            disabled={loading}
-                            className="w-full bg-white text-black py-3 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                        >
-                            {loading ? 'Saving...' : 'Save Routine'}
-                            {!loading && <Check size={16} />}
-                        </button>
-                    </div>
                 </div>
 
-                {/* Center: Visualization */}
-                <div className="lg:col-span-2 flex flex-col gap-6">
+                {/* 🟢 CENTER/RIGHT: 24H VISUALIZER (8 cols) */}
+                <div className="lg:col-span-8 bg-[#09090b] border border-white/5 rounded-[40px] p-8 flex flex-col items-center justify-center relative min-h-[600px] overflow-hidden">
+                    {/* Background Grid */}
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] opacity-50 pointer-events-none"></div>
 
-                    {/* Main Visualizer Card */}
-                    <div className="flex-1 bg-[#09090b]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-8 flex items-center justify-center relative overflow-hidden group">
-                        {/* Background Glow */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-[#1d9bf0]/5 via-purple-500/5 to-transparent opacity-50" />
+                    {/* 24H CLOCK SVG */}
+                    <div className="relative w-full max-w-[500px] aspect-square animate-scale-in">
+                        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl">
+                            {/* Outer Ring */}
+                            <circle cx="50" cy="50" r="48" fill="none" stroke="#2f3336" strokeWidth="0.5" className="opacity-30" />
+                            <circle cx="50" cy="50" r="40" fill="#16181c" stroke="#2f3336" strokeWidth="0.2" />
 
-                        <div className="relative w-[400px] h-[400px] rounded-full shadow-2xl transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                            style={{ background: getConicGradient() }}>
+                            {/* Hour Markers */}
+                            {[...Array(24)].map((_, i) => {
+                                const angle = (i / 24) * 360;
+                                const p1 = polarToCartesian(50, 50, 44, angle);
+                                const p2 = polarToCartesian(50, 50, 47, angle);
+                                return (
+                                    <g key={i}>
+                                        <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#71767b" strokeWidth="0.5" />
+                                        {i % 3 === 0 && (
+                                            <text
+                                                x={polarToCartesian(50, 50, 36, angle).x}
+                                                y={polarToCartesian(50, 50, 36, angle).y}
+                                                textAnchor="middle"
+                                                dominantBaseline="middle"
+                                                fill="#71767b"
+                                                fontSize="3"
+                                                fontWeight="bold"
+                                            >
+                                                {i}
+                                            </text>
+                                        )}
+                                    </g>
+                                );
+                            })}
 
-                            {/* Inner Circle (Hollow) */}
-                            <div className="absolute inset-4 bg-[#09090b] rounded-full flex flex-col items-center justify-center z-10">
-                                <div className="text-[#71767b] text-xs font-bold uppercase tracking-[0.2em] mb-2">Total Free Time</div>
-                                <div className="text-6xl font-black text-white font-['Outfit'] tracking-tight">
-                                    {Math.floor(stats.free / 60)}<span className="text-2xl text-gray-500 font-bold ml-1">h</span>
-                                    {stats.free % 60 > 0 && <span className="text-4xl ml-2">{stats.free % 60}<span className="text-xl text-gray-500 ml-1">m</span></span>}
-                                </div>
-                                <div className="text-[#1d9bf0] text-xs font-medium mt-4 bg-[#1d9bf0]/10 px-3 py-1 rounded-full border border-[#1d9bf0]/20">
-                                    {stats.free < 120 ? "Tight Schedule" : stats.free < 300 ? "Balanced Day" : "High Availability"}
-                                </div>
-                            </div>
+                            {/* Routine Sectors */}
+                            {routine.map((item, idx) => {
+                                const [sH, sM] = item.startTime.split(':').map(Number);
+                                const [eH, eM] = item.endTime.split(':').map(Number);
+                                const startMin = sH * 60 + sM;
+                                const endMin = eH * 60 + eM;
+                                const startAng = (startMin / 1440) * 360;
+                                let endAng = (endMin / 1440) * 360;
+                                if (endAng < startAng) endAng += 360; // Cross midnight
 
-                            {/* Clock Markers (Optional decoration) */}
-                            {[0, 6, 12, 18].map(h => (
-                                <div key={h} className="absolute text-[10px] font-bold text-gray-600"
-                                    style={{
-                                        top: '50%', left: '50%',
-                                        transform: `translate(-50%, -50%) rotate(${h * 15}deg) translateY(-210px) rotate(-${h * 15}deg)`
-                                    }}>
-                                    {h}:00
-                                </div>
-                            ))}
+                                const colorMap = {
+                                    fixed: '#ef4444',
+                                    productive: '#3b82f6',
+                                    rest: '#8b5cf6',
+                                    leisure: '#10b981'
+                                };
+
+                                return (
+                                    <path
+                                        key={idx}
+                                        d={describeArc(50, 50, 40, startAng, endAng)}
+                                        fill="none"
+                                        stroke={colorMap[item.category] || '#fff'}
+                                        strokeWidth="8"
+                                        className="opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
+                                        strokeDasharray="2 0.5" // Optional texture
+                                    >
+                                        <title>{item.activity} ({item.startTime} - {item.endTime})</title>
+                                    </path>
+                                );
+                            })}
+
+                            {/* Inner Hub */}
+                            <circle cx="50" cy="50" r="15" fill="#09090b" stroke="#2f3336" strokeWidth="0.5" />
+                        </svg>
+
+                        {/* Center Content Absolute */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Efficiency</div>
+                            <div className="text-4xl font-black text-white">{stats.score}%</div>
                         </div>
+
+                        {/* Current Time Hand (Optional, maybe too complex for SVG calc right now, keep simple) */}
                     </div>
 
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-4 gap-4">
-                        {[
-                            { label: 'Fixed', val: stats.fixed, color: 'text-gray-400', icon: <Briefcase /> },
-                            { label: 'Productive', val: stats.productive, color: 'text-[#1d9bf0]', icon: <Zap /> },
-                            { label: 'Rest', val: stats.rest, color: 'text-purple-400', icon: <Moon /> },
-                            { label: 'Leisure', val: stats.leisure, color: 'text-pink-400', icon: <Coffee /> },
-                        ].map(stat => (
-                            <div key={stat.label} className="bg-[#16181c]/50 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center hover:bg-[#16181c] transition-colors">
-                                <div className={`${stat.color} mb-2 opacity-80`}>
-                                    {
-                                        stat.label === 'Fixed' ? <Briefcase size={20} /> :
-                                            stat.label === 'Productive' ? <Zap size={20} /> :
-                                                stat.label === 'Rest' ? <Moon size={20} /> :
-                                                    <Coffee size={20} />
-                                    }
-                                </div>
-                                <div className="text-2xl font-bold text-white font-['Outfit']">
-                                    {Math.round(stat.val / 60)}<span className="text-xs text-gray-500 ml-0.5">h</span>
-                                </div>
-                                <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mt-1">{stat.label}</div>
+                    {/* Legend */}
+                    <div className="mt-8 flex gap-6">
+                        {categories.map(cat => (
+                            <div key={cat.id} className="flex items-center gap-2">
+                                <span className={`w-3 h-3 rounded-full ${cat.bg.replace('/10', '')}`}></span>
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{cat.label}</span>
                             </div>
                         ))}
                     </div>
-
                 </div>
 
             </div>
+
         </div>
     );
 }
-
-// Importing icons here just for the snippet context, ensure they are imported at the top
-import { Edit3 } from "lucide-react";

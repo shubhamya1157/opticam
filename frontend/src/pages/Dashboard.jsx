@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ClassCard from "../components/features/dashboard/ClassCard";
+import PremiumTimeInput from "../components/common/PremiumTimeInput";
 import { useOutletContext } from "react-router-dom";
 import { fetchClasses, addClass, updateClassStatus, deleteClass } from "../services/classService";
 import { CalendarPlus, CalendarOff, Clock, MapPin, Zap, TrendingUp, BookOpen, AlertCircle } from "lucide-react";
@@ -182,20 +183,16 @@ export default function Dashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] text-[#71767b] font-bold uppercase tracking-widest mb-2 block flex items-center gap-1"><Clock size={10} /> Start Time</label>
-                  <input
-                    type="time"
-                    className="w-full bg-[#16181c] border border-[#2f3336] rounded-lg px-3 py-3 text-white outline-none focus:border-[#1d9bf0] transition-colors text-sm"
+                  <PremiumTimeInput
                     value={newClass.startTime}
-                    onChange={e => setNewClass({ ...newClass, startTime: e.target.value })}
+                    onChange={(val) => setNewClass({ ...newClass, startTime: val })}
                   />
                 </div>
                 <div>
                   <label className="text-[10px] text-[#71767b] font-bold uppercase tracking-widest mb-2 block flex items-center gap-1"><Clock size={10} /> End Time</label>
-                  <input
-                    type="time"
-                    className="w-full bg-[#16181c] border border-[#2f3336] rounded-lg px-3 py-3 text-white outline-none focus:border-[#1d9bf0] transition-colors text-sm"
+                  <PremiumTimeInput
                     value={newClass.endTime}
-                    onChange={e => setNewClass({ ...newClass, endTime: e.target.value })}
+                    onChange={(val) => setNewClass({ ...newClass, endTime: val })}
                   />
                 </div>
               </div>

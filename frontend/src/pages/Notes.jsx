@@ -40,6 +40,15 @@ export default function Notes() {
         { id: "#442f19", name: "Brown" },  // Brown-ish
     ];
 
+    const loadNotes = async () => {
+        try {
+            const res = await fetchNotes(user._id);
+            setNotes(res.data);
+        } catch (err) {
+            console.error("Failed to load notes", err);
+        }
+    };
+
     useEffect(() => {
         if (user?._id) {
             loadNotes();
@@ -54,15 +63,6 @@ export default function Notes() {
             )
         );
     }, [searchQuery, notes]);
-
-    const loadNotes = async () => {
-        try {
-            const res = await fetchNotes(user._id);
-            setNotes(res.data);
-        } catch (err) {
-            console.error("Failed to load notes", err);
-        }
-    };
 
     const handleSave = async () => {
         if (!formData.title && !formData.content) return;
