@@ -13,7 +13,8 @@ import {
   Users,
   ChevronRight,
   MoreHorizontal,
-  Activity
+  Activity,
+  Wifi
 } from "lucide-react";
 import logo from "../../assets/opticam-logo.png";
 import RoutineWidget from "../features/dashboard/RoutineWidget";
@@ -32,6 +33,7 @@ export default function Sidebar({ user, onUpdateUser }) {
     { icon: <CheckSquare size={20} />, label: "Tasks", path: "/tasks" },
     { icon: <Calendar size={20} />, label: "Calendar", path: "/calendar" },
     { icon: <Users size={20} />, label: "Community", path: "/community" },
+    { icon: <Wifi size={20} />, label: "Resonance", path: "/resonance" },
   ];
 
   const secondaryItems = [

@@ -9,7 +9,8 @@ import Notes from "./pages/Notes";
 import Tasks from "./pages/Tasks";
 import Achievements from "./pages/Achievements";
 import Notifications from "./pages/Notifications";
-import Community from "./pages/Community"; // 🟢
+import Community from "./pages/Community";
+import Resonance from "./pages/Resonance";
 import Layout from "./components/layout/Layout";
 
 function App() {
@@ -25,7 +26,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/achievements" element={<Achievements />} />
-          <Route path="/community" element={<Community />} /> {/* 🟢 */}
+          <Route path="/community" element={<Community />} />
+          <Route path="/resonance" element={<Resonance />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/day-pulse" element={<DayPulse />} />

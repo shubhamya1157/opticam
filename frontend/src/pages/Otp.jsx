@@ -51,7 +51,17 @@ export default function Otp() {
         }
       });
 
+      // 💾 Save Token & User
+      if (res.data.token) {
+        console.log("✅ Token received & saved:", res.data.token.substring(0, 10) + "...");
+        localStorage.setItem("token", res.data.token);
+      } else {
+        console.error("❌ No token received from backend!");
+      }
+      localStorage.setItem("opticam_user", JSON.stringify(res.data.user));
+
       // ✅ OTP verified → go to dashboard
+      console.log("navigating to dashboard");
       navigate("/dashboard", {
         state: { user: res.data.user }
       });
